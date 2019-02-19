@@ -68,7 +68,7 @@ function love.load()
 		['bricks'] = GenerateQuadsBricks(gTextures['main']),
 		['hearts'] = GenerateQuads(gTextures['hearts'], 10, 9),
 		-- AS2.1 - adding powerups to the frames
-		['powerups'] = GenerateQuads(gTextures['main'])
+		['powerups'] = GenerateQuadsPowerups(gTextures['main'])
 	}
 
 	-- initialize our virtual resolution, which will be rendered within our

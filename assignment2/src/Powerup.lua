@@ -20,44 +20,60 @@
 Powerup = Class{}
 
 function Powerup:init(x, y, keyValid)
-
 	self.x = x
 	self.y = y
+	self.dx = 0
+	self.dy = 0
 	self.width = 16
 	self.height = 16
+	-- AS2.1 type
+	if keyValid then
+		self.type = 9
+	else
+		self.type = 0
+	end
 	self.typeCount = 8
-
-	-- used to determine whether this powerup should be rendered
-	self.inPlay = true
-
-	-- AS2.1 - adding ability to have multiple types
-	-- AS3.1 - key will only spawn if locked brick exists
-	self.type = math.random(0, 8 + keyValid);
-
-	-- Decided that particles with the powerup may be confusing
-end
-
-function Powerup:collides(target)
-
-
-
+	self.collided = false
+	-- AS2.1 -variables for the startup animation
+	self.blinkTimer = 0
+	self.onScreen = false
+	self.startupTimer = 0
 
 end
 
 function Powerup:update(dt)
-	-- Needs velocity
-end
-
-function Powerup:render()
-	if self.inPlay then
-		love.graphics.draw(gTextures['main'],
-			-- multiply color by 4 (-1) to get our color offset, then add tier to that
-			-- to draw the correct tier and color powerup onto the screen
-			gFrames['powerups'][1 + ((self.color - 1) * 4) + self.tier],
-			self.x, self.y)
+	if self.startupTimer < 3 then
+		self.startupTimer = self.startupTimer + dt
+		self.blinkTimer = self.blinkTimer + dt
+		if self.blinkTimer > 0.5 then
+			self.blinkTimer = self.blinkTimer - 0.5
+			self.onScreen = not self.onScreen
+		end
+	else
+		self.dy = 0.5
 	end
 end
 
-function Powerup:effect()
-	-- Effects can be listed here
+function Powerup:collides(target)
+	-- first, check to see if the left edge of either is farther to the right
+	-- than the right edge of the other
+	if self.x > target.x + target.width or target.x > self.x + self.width then
+		return false
+	end
+
+	-- then check to see if the bottom edge of either is higher than the top
+	-- edge of the other
+	if self.y > target.y + target.height or target.y > self.y + self.height then
+		return false
+	end
+
+	-- if the above aren't true, they're overlapping
+	return true
+end
+
+function Powerup:render()
+	if self.onScreen then
+		love.graphics.draw(gTextures['main'], gFrames['powerups'][self.type],
+			self.x, self.y)
+	end
 end
