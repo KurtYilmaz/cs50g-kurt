@@ -62,13 +62,13 @@ function love.load()
 	-- Quads we will generate for all of our textures; Quads allow us
 	-- to show only part of a texture and not the entire thing
 	gFrames = {
+		-- AS2.1 - adding powerups to the frames
+		['powerups'] = GenerateQuadsPowerups(gTextures['main']),
 		['arrows'] = GenerateQuads(gTextures['arrows'], 24, 24),
 		['paddles'] = GenerateQuadsPaddles(gTextures['main']),
 		['balls'] = GenerateQuadsBalls(gTextures['main']),
 		['bricks'] = GenerateQuadsBricks(gTextures['main']),
-		['hearts'] = GenerateQuads(gTextures['hearts'], 10, 9),
-		-- AS2.1 - adding powerups to the frames
-		['powerups'] = GenerateQuadsPowerups(gTextures['main'])
+		['hearts'] = GenerateQuads(gTextures['hearts'], 10, 9)
 	}
 
 	-- initialize our virtual resolution, which will be rendered within our

@@ -28,14 +28,15 @@ function PlayState:enter(params)
 	self.highScores = params.highScores
 	-- AS2.1 - accounting for multiple balls
 	self.balls = {params.ball}
-	self.ballCount = 1;
 	self.level = params.level
+	-- AS2.1 - powerup timer for spawning powerups
+	self.powerupTimer = 1
 
 	self.recoverPoints = 5000
 
 	-- give ball random starting velocity
 	self.balls[1].dx = math.random(-200, 200)
-	self.balls[1].dy = math.random(-50, -60)
+	self.balls[1].dy = math.random(-100, -120)
 
 	-- AS2.1 - powerups table in Playstate
 	self.powerups = {}
@@ -56,10 +57,38 @@ function PlayState:update(dt)
 		return
 	end
 
+	-- AS2.1 - powerup timer logic
+	if self.powerupTimer >= 0 then
+		self.powerupTimer = self.powerupTimer - dt
+	else
+		p = Powerup(
+			-- x coordinate
+			math.random(
+				-- Half size of powerup
+				8,
+				-- Maximum farthest it can reach
+				VIRTUAL_WIDTH - 8
+			),
+
+			-- y coordinate constant for balance
+			self.paddle.y - 100,
+
+			-- keyValid, will change
+			false
+		)
+		table.insert(self.powerups, p)
+		self.powerupTimer = 5
+	end
+
 	-- update positions based on velocity
 	self.paddle:update(dt)
 
-	for i, ball in pairs(balls) do
+	-- AS2.1 - update powerups
+	for k, powerup in pairs(self.powerups) do
+		powerup:update(dt)
+	end
+
+	for i, ball in pairs(self.balls) do
 
 		ball:update(dt)
 
@@ -165,7 +194,7 @@ function PlayState:update(dt)
 
 				-- slightly scale the y velocity to speed up the game, capping at +- 150
 				if math.abs(ball.dy) < 150 then
-					ball.dy = ball.dy * 1.02
+					ball.dy = ball.dy * 1.001
 				end
 
 				-- only allow colliding with one brick, for corners
@@ -222,8 +251,13 @@ function PlayState:render()
 
 	self.paddle:render()
 
+	-- AS2.1 - Rendering powerups
+	for k, powerup in pairs(self.powerups) do
+		powerup:render()
+	end
+
 	for i, ball in pairs(self.balls) do
-		self.ball:render()
+		ball:render()
 	end
 
 	renderScore(self.score)

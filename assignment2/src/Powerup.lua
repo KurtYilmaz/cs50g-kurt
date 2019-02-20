@@ -30,14 +30,14 @@ function Powerup:init(x, y, keyValid)
 	if keyValid then
 		self.type = 9
 	else
-		self.type = 0
+		self.type = math.random(1, 9)
 	end
 	self.typeCount = 8
 	self.collided = false
 	-- AS2.1 -variables for the startup animation
 	self.blinkTimer = 0
-	self.onScreen = false
 	self.startupTimer = 0
+	self.visible = true
 
 end
 
@@ -47,10 +47,10 @@ function Powerup:update(dt)
 		self.blinkTimer = self.blinkTimer + dt
 		if self.blinkTimer > 0.5 then
 			self.blinkTimer = self.blinkTimer - 0.5
-			self.onScreen = not self.onScreen
+			self.visible = not self.visible
 		end
 	else
-		self.dy = 0.5
+		self.y = self.y + 1
 	end
 end
 
@@ -72,7 +72,7 @@ function Powerup:collides(target)
 end
 
 function Powerup:render()
-	if self.onScreen then
+	if self.visible then
 		love.graphics.draw(gTextures['main'], gFrames['powerups'][self.type],
 			self.x, self.y)
 	end
