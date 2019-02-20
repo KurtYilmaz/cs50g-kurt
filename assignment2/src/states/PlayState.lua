@@ -28,15 +28,16 @@ function PlayState:enter(params)
 	self.highScores = params.highScores
 	-- AS2.1 - accounting for multiple balls
 	self.balls = {params.ball}
+	self.ballCount = 1
 	self.level = params.level
 	-- AS2.1 - powerup timer for spawning powerups
-	self.powerupTimer = 1
+	self.powerupTimer = 6
 
 	self.recoverPoints = 5000
 
 	-- give ball random starting velocity
 	self.balls[1].dx = math.random(-200, 200)
-	self.balls[1].dy = math.random(-100, -120)
+	self.balls[1].dy = math.random(-50, -100)
 
 	-- AS2.1 - powerups table in Playstate
 	self.powerups = {}
@@ -64,10 +65,10 @@ function PlayState:update(dt)
 		p = Powerup(
 			-- x coordinate
 			math.random(
-				-- Half size of powerup
-				8,
+				-- Minimum location
+				0,
 				-- Maximum farthest it can reach
-				VIRTUAL_WIDTH - 8
+				VIRTUAL_WIDTH - 16
 			),
 
 			-- y coordinate constant for balance
@@ -77,18 +78,58 @@ function PlayState:update(dt)
 			false
 		)
 		table.insert(self.powerups, p)
-		self.powerupTimer = 5
+		self.powerupTimer = 12
 	end
 
 	-- update positions based on velocity
 	self.paddle:update(dt)
 
-	-- AS2.1 - update powerups
+	-- AS2.1 - update powerups and check collision
 	for k, powerup in pairs(self.powerups) do
 		powerup:update(dt)
+		if powerup:collides(self.paddle) then
+		--[[Because there are a bunch of different sprites,
+			wanted to open functionality to have multiple
+			types of powerups. Key is 10, ball powerup is
+			technically 7 (because of sprite), but right
+			now, the ball powerup is 1-9, because it's the
+			only powerup specified.
+		]]
+			if powerup.type == 1 then
+				-- Replace with unique effect
+				self:powerUp7()
+			elseif powerup.type == 2 then
+				-- Replace with unique effect
+				self:powerUp7()
+			elseif powerup.type == 3 then
+				-- Replace with unique effect
+				self:powerUp7()
+			elseif powerup.type == 4 then
+				-- Replace with unique effect
+				self:powerUp7()
+			elseif powerup.type == 5 then
+				-- Replace with unique effect
+				self:powerUp7()
+			elseif powerup.type == 6 then
+				-- Replace with unique effect
+				self:powerUp7()
+			elseif powerup.type == 7 then
+				-- Spawn 2 extra balls
+				self:powerUp7()
+			elseif powerup.type == 8 then
+				-- Replace with unique effect
+				self:powerUp7()
+			elseif powerup.type == 9 then
+				-- Replace with unique effect
+				self:powerUp7()
+			elseif powerup.type == 10 then
+			end
+			table.remove(self.powerups, k)
+		end
 	end
 
-	for i, ball in pairs(self.balls) do
+
+	for k, ball in pairs(self.balls) do
 
 		ball:update(dt)
 
@@ -114,7 +155,7 @@ function PlayState:update(dt)
 		end
 
 		-- detect collision across all bricks with the balls
-		for k, brick in pairs(self.bricks) do
+		for i, brick in pairs(self.bricks) do
 
 			-- only check collision if we're in play
 			if brick.inPlay and ball:collides(brick) then
@@ -192,10 +233,12 @@ function PlayState:update(dt)
 					ball.y = brick.y + 16
 				end
 
-				-- slightly scale the y velocity to speed up the game, capping at +- 150
-				if math.abs(ball.dy) < 150 then
-					ball.dy = ball.dy * 1.001
-				end
+				-- AS2.1 Removed the logic below to give a larger speedup off walls
+				-- This is to accomodate for the ball powerup
+					-- slightly scale the y velocity to speed up the game, capping at +- 150
+					-- if math.abs(ball.dy) < 150 then
+					-- 	ball.dy = ball.dy * 1.001
+					-- end
 
 				-- only allow colliding with one brick, for corners
 				break
@@ -204,24 +247,29 @@ function PlayState:update(dt)
 
 		-- if ball goes below bounds, revert to serve state and decrease health
 		if ball.y >= VIRTUAL_HEIGHT then
-			self.health = self.health - 1
-			gSounds['hurt']:play()
+			if self.ballCount <= 1 then
+				self.health = self.health - 1
+				gSounds['hurt']:play()
 
-			if self.health == 0 then
-				gStateMachine:change('game-over', {
-					score = self.score,
-					highScores = self.highScores
-				})
+				if self.health == 0 then
+					gStateMachine:change('game-over', {
+						score = self.score,
+						highScores = self.highScores
+					})
+				else
+					gStateMachine:change('serve', {
+						paddle = self.paddle,
+						bricks = self.bricks,
+						health = self.health,
+						score = self.score,
+						highScores = self.highScores,
+						level = self.level,
+						recoverPoints = self.recoverPoints
+					})
+				end
 			else
-				gStateMachine:change('serve', {
-					paddle = self.paddle,
-					bricks = self.bricks,
-					health = self.health,
-					score = self.score,
-					highScores = self.highScores,
-					level = self.level,
-					recoverPoints = self.recoverPoints
-				})
+				table.remove(self.balls, k)
+				self.ballCount = self.ballCount - 1
 			end
 		end
 	end
@@ -278,4 +326,30 @@ function PlayState:checkVictory()
 	end
 
 	return true
+end
+
+-- AS2.1 defining ball powerup
+function PlayState:powerUp7()
+	-- Spawn two extra balls
+	ball1 = Ball(math.random(7))
+	ball2 = Ball(math.random(7))
+
+	ball1.x = self.balls[1].x
+	ball2.x = self.balls[1].x
+
+	ball1.y = self.balls[1].y
+	ball2.y = self.balls[1].y
+
+	ball1.dx = self.balls[1].dx
+	ball2.dx = self.balls[1].dx
+
+	ball1.dy = -math.abs(self.balls[1].dy / 2)
+	ball2.dy = -math.abs(self.balls[1].dy / 4)
+
+	table.insert(self.balls, ball1)
+	table.insert(self.balls, ball2)
+
+	self.ballCount = self.ballCount + 2
+
+	gSounds['powerup']:play()
 end

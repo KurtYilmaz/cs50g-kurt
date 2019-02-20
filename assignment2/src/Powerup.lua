@@ -28,7 +28,7 @@ function Powerup:init(x, y, keyValid)
 	self.height = 16
 	-- AS2.1 type
 	if keyValid then
-		self.type = 9
+		self.type = 10
 	else
 		self.type = math.random(1, 9)
 	end
@@ -42,11 +42,12 @@ function Powerup:init(x, y, keyValid)
 end
 
 function Powerup:update(dt)
-	if self.startupTimer < 3 then
+	if self.startupTimer < 3.4285 then
 		self.startupTimer = self.startupTimer + dt
 		self.blinkTimer = self.blinkTimer + dt
-		if self.blinkTimer > 0.5 then
-			self.blinkTimer = self.blinkTimer - 0.5
+		-- AS2.1 Syncing the blink to the BPM of the music
+		if self.blinkTimer > 0.4285 then
+			self.blinkTimer = self.blinkTimer - 0.4285
 			self.visible = not self.visible
 		end
 	else
