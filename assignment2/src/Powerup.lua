@@ -26,13 +26,13 @@ function Powerup:init(x, y, keyValid)
 	self.dy = 0
 	self.width = 16
 	self.height = 16
-	-- AS2.1 type
+	-- AS2.1 - type calculation
+	-- AS2.3 - 80% chance to get key if needed
 	if keyValid then
 		self.type = 10
 	else
 		self.type = math.random(1, 9)
 	end
-	self.typeCount = 8
 	self.collided = false
 	-- AS2.1 -variables for the startup animation
 	self.blinkTimer = 0
@@ -74,7 +74,17 @@ end
 
 function Powerup:render()
 	if self.visible then
-		love.graphics.draw(gTextures['main'], gFrames['powerups'][self.type],
-			self.x, self.y)
+		love.graphics.draw(gTextures['main'], gFrames['powerups'][self.type], self.x, self.y)
 	end
+end
+
+-- AS2.3 - (static function) visual identifier for lasting powerups
+function Powerup.renderBar(key)
+	local x = 4
+	local y = VIRTUAL_HEIGHT - 20
+	if key then
+		love.graphics.draw(gTextures['main'], gFrames['powerups'][10], x, y)
+		x = x + 16
+	end
+
 end

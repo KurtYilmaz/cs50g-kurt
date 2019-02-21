@@ -30,10 +30,14 @@ function PlayState:enter(params)
 	self.balls = {params.ball}
 	self.ballCount = 1
 	self.level = params.level
-	-- AS2.1 - powerup timer for spawning powerups
-	self.powerupTimer = 6
+	self.recoverPoints = params.recoverPoints
+	self.numLockedBricks = params.numLockedBricks
 
-	self.recoverPoints = 5000
+	-- AS2.1 - powerup timer for spawning powerups
+	self.powerupTimer = 1
+
+	-- AS2.3 - if the player has the key powerup
+	self.hasKeyPowerup = false
 
 	-- give ball random starting velocity
 	self.balls[1].dx = math.random(-200, 200)
@@ -74,8 +78,8 @@ function PlayState:update(dt)
 			-- y coordinate constant for balance
 			self.paddle.y - 100,
 
-			-- keyValid, will change
-			false
+			-- keyValid
+			(self.numLockedBricks > 0) and (not self.hasKeyPowerup)
 		)
 		table.insert(self.powerups, p)
 		self.powerupTimer = 12
@@ -123,6 +127,8 @@ function PlayState:update(dt)
 				-- Replace with unique effect
 				self:powerUp7()
 			elseif powerup.type == 10 then
+				self.hasKeyPowerup = true
+				gSounds['powerup']:play()
 			end
 			table.remove(self.powerups, k)
 		end
@@ -160,16 +166,33 @@ function PlayState:update(dt)
 			-- only check collision if we're in play
 			if brick.inPlay and ball:collides(brick) then
 
-				-- add to score
-				self.score = self.score + (brick.tier * 200 + brick.color * 25)
+				-- AS2.3 - scoring revamped with locked brick
+				local brickUnlocked = false
+				if brick.locked == true and self.hasKeyPowerup then
+					self.score = self.score + 1000
+					brickUnlocked = true
+				elseif brick.locked == true then
+
+				else
+					self.score = self.score + (brick.tier * 200 + brick.color * 25)
+				end
 
 				-- trigger the brick's hit function, which removes it from play
-				brick:hit()
+				brick:hit(self.hasKeyPowerup)
+				if brickUnlocked then
+					self.hasKeyPowerup = false
+					self.numLockedBricks = self.numLockedBricks - 1
+				end
 
 				-- if we have enough points, recover a point of health
 				if self.score > self.recoverPoints then
 					-- can't go above 3 health
 					self.health = math.min(3, self.health + 1)
+
+					-- AS2.2 - gaining paddle size with recover
+					if self.paddle.size < 4 then
+						self.paddle:resize(self.paddle.size + 1)
+					end
 
 					-- multiply recover points by 2
 					self.recoverPoints = math.min(100000, self.recoverPoints * 2)
@@ -251,6 +274,11 @@ function PlayState:update(dt)
 				self.health = self.health - 1
 				gSounds['hurt']:play()
 
+				-- AS2.2 - resize paddle when hurt
+				if self.paddle.size > 1 then
+					self.paddle:resize(self.paddle.size - 1)
+				end
+
 				if self.health == 0 then
 					gStateMachine:change('game-over', {
 						score = self.score,
@@ -304,12 +332,13 @@ function PlayState:render()
 		powerup:render()
 	end
 
-	for i, ball in pairs(self.balls) do
+	for k, ball in pairs(self.balls) do
 		ball:render()
 	end
 
 	renderScore(self.score)
 	renderHealth(self.health)
+	Powerup.renderBar(self.hasKeyPowerup)
 
 	-- pause text, if paused
 	if self.paused then
