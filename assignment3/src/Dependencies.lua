@@ -39,9 +39,13 @@ require 'src/states/BeginGameState'
 require 'src/states/GameOverState'
 require 'src/states/PlayState'
 require 'src/states/StartState'
+-- AS3.4 - add reset state
+require 'src/states/ResetState'
 
 gSounds = {
-	['music'] = love.audio.newSource('sounds/music3.mp3'),
+	['music-jazzy'] = love.audio.newSource('sounds/music3.mp3'),
+	['music-happy'] = love.audio.newSource('sounds/music2.mp3'),
+	['music-intense'] = love.audio.newSource('sounds/music2.mp3'),
 	['select'] = love.audio.newSource('sounds/select.wav'),
 	['error'] = love.audio.newSource('sounds/error.wav'),
 	['match'] = love.audio.newSource('sounds/match.wav'),
@@ -67,5 +71,6 @@ gFrames = {
 gFonts = {
 	['small'] = love.graphics.newFont('fonts/font.ttf', 8),
 	['medium'] = love.graphics.newFont('fonts/font.ttf', 16),
-	['large'] = love.graphics.newFont('fonts/font.ttf', 32)
+	['large'] = love.graphics.newFont('fonts/font.ttf', 32),
+	['max'] = love.graphics.newFont('fonts/font.ttf', 48)
 }

@@ -63,14 +63,16 @@ function love.load()
 	})
 
 	-- set music to loop and start
-	gSounds['music']:setLooping(true)
-	gSounds['music']:play()
+	gSounds['music-jazzy']:setLooping(true)
+	gSounds['music-jazzy']:play()
 
 	-- initialize state machine with all state-returning functions
 	gStateMachine = StateMachine {
 		['start'] = function() return StartState() end,
 		['begin-game'] = function() return BeginGameState() end,
 		['play'] = function() return PlayState() end,
+		-- AS3.4 - adding a reset state
+		['reset'] = function() return ResetState() end,
 		['game-over'] = function() return GameOverState() end
 	}
 	gStateMachine:change('start')

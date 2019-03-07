@@ -20,12 +20,9 @@ PlayState = Class{__includes = BaseState}
 
 function PlayState:init()
 
-	-- start our transition alpha at full, so we fade in
-	self.transitionAlpha = 255
-
 	-- position in the grid which we're highlighting
-	self.boardHighlightX = 0
-	self.boardHighlightY = 0
+	self.boardCursorX = 0
+	self.boardCursorY = 0
 
 	-- timer used to switch the highlight rect's color
 	self.rectHighlighted = false
@@ -35,6 +32,9 @@ function PlayState:init()
 
 	-- tile we're currently highlighting (preparing to swap)
 	self.highlightedTile = nil
+
+	-- AS3.4 - stores matches
+	self.matches = {}
 
 	-- AS3.5 - Mouse member variable
 	self.cursorX = 0
@@ -77,6 +77,9 @@ function PlayState:enter(params)
 
 	-- score we have to reach to get to the next level
 	self.scoreGoal = self.level * 1.25 * 1000
+
+	-- start our transition alpha at full, so we fade in
+	self.transitionAlpha = params.alpha
 end
 
 function PlayState:update(dt)
@@ -85,6 +88,14 @@ function PlayState:update(dt)
 	end
 
 	self.board:update(dt)
+	if self.board:checkIfStuck() then
+		gStateMachine:change('reset', {
+			score = self.score,
+			timer = self.timer,
+			level = self.level,
+			goal = self.scoreGoal
+		})
+	end
 
 	-- AS3.5 - update cursor positions and adjust to screen
 	self.cursorX, self.cursorY = love.mouseCoordinates()
@@ -130,16 +141,15 @@ function PlayState:update(dt)
 
 	if self.canInput and self:mouseInBounds() then
 		-- AS3.5 - Mouse "movement"
-		self.boardHighlightX = math.floor(self.cursorX / 32)
-		self.boardHighlightY = math.floor(self.cursorY / 32)
+		self.boardCursorX = math.floor(self.cursorX / 32)
+		self.boardCursorY = math.floor(self.cursorY / 32)
 
 		-- AS3.5 - if we've pressed mouse, to select or deselect a tile...
 		if love.mouse.wasPressed(1) then
 
-			-- if same tile as currently highlighted, deselect
 			-- AS3.5 - fixing bug allowing selection of tile outside of board
-			local x = math.min(math.max(0, self.boardHighlightX) + 1, 8)
-			local y = math.min(math.max(0, self.boardHighlightY) + 1, 8)
+			local x = math.min(math.max(0, self.boardCursorX) + 1, 8)
+			local y = math.min(math.max(0, self.boardCursorY) + 1, 8)
 
 			-- if nothing is highlighted, highlight current tile
 			if not self.highlightedTile then
@@ -176,15 +186,42 @@ function PlayState:update(dt)
 
 				self.board.tiles[newTile.gridY][newTile.gridX] = newTile
 
+				local match = self.board:calculateMatches()
+
 				-- tween coordinates between the two so they swap
+				-- After finish, check match validity
 				Timer.tween(0.1, {
 					[self.highlightedTile] = {x = newTile.x, y = newTile.y},
 					[newTile] = {x = self.highlightedTile.x, y = self.highlightedTile.y}
-				})
+				}):finish(function()
+					-- AS3.4 - no match causes error and swap back
+					if match == false then
+						-- Swap back
+						Timer.tween(0.1, {
+							[self.highlightedTile] = {x = newTile.x, y = newTile.y},
+							[newTile] = {x = self.highlightedTile.x, y = self.highlightedTile.y}
+						})
+						tempX = self.highlightedTile.gridX
+						tempY = self.highlightedTile.gridY
 
-				-- once the swap is finished, we can tween falling blocks as needed
-				:finish(function()
-					self:calculateMatches()
+						self.highlightedTile.gridX = newTile.gridX
+						self.highlightedTile.gridY = newTile.gridY
+
+						newTile.gridX = tempX
+						newTile.gridY = tempY
+
+						self.board.tiles[self.highlightedTile.gridY][self.highlightedTile.gridX] =
+							self.highlightedTile
+						self.board.tiles[newTile.gridY][newTile.gridX] = newTile
+
+						gSounds['error']:stop()
+						gSounds['error']:play()
+
+						self.highlightedTile = nil
+					else
+						self.matches = match
+						self:calculateMatches()
+					end
 				end)
 			end
 		end
@@ -203,22 +240,28 @@ function PlayState:calculateMatches()
 	self.highlightedTile = nil
 
 	-- if we have any matches, remove them and tween the falling blocks that result
-	local matches = self.board:calculateMatches()
+	if self.matches == nil then
+		self.matches = self.board:calculateMatches()
+	end
 
-	if matches then
+	if self.matches then
 		gSounds['match']:stop()
 		gSounds['match']:play()
 
 		-- add score for each match
-		for k, match in pairs(matches) do
+		for k, match in pairs(self.matches) do
 			self.score = self.score + #match * 50
-
+			-- AS3.2 - each step of variety is 10 more to score
+			for i, tile in pairs(match) do
+				self.score = self.score + tile.variety * 10 - 10
 			-- AS3.1 - adding +1 to timer for each match
+			end
 			self.timer = self.timer + 1
 		end
 
 		-- remove any tiles that matched from the board, making empty spaces
 		self.board:removeMatches()
+		self.matches = nil
 
 		-- gets a table with tween values for tiles that should now fall
 		-- AS3.3 - factoring number of tiles into tween speed
@@ -227,7 +270,7 @@ function PlayState:calculateMatches()
 		tilesToFall, tileCount = self.board:getFallingTiles()
 		tileCount = math.max(tileCount, 5)
 
-		-- tween new tiles that spawn from the ceiling over 0.25s to fill in
+		-- tween new tiles that spawn from the ceiling over time to fill in
 		-- the new upper gaps that exist
 
 		Timer.tween(0.05 * tileCount, tilesToFall):finish(function()
@@ -282,12 +325,11 @@ function PlayState:render()
 	-- AS3.5 - Draw cursor rect if mouse in bounds
 	if self:mouseInBounds() then
 		love.graphics.setLineWidth(4)
-		love.graphics.rectangle('line', self.boardHighlightX * 32 + (GRID_START_X),
-			self.boardHighlightY * 32 + GRID_START_Y, 32, 32, 4)
+		love.graphics.rectangle('line', self.boardCursorX * 32 + (GRID_START_X),
+			self.boardCursorY * 32 + GRID_START_Y, 32, 32, 4)
 	end
 
 	-- GUI text
-	-- temp
 	love.graphics.setColor(255, 255, 255, 255)
 
 	love.graphics.setColor(56, 56, 56, 234)
@@ -301,8 +343,8 @@ function PlayState:render()
 	love.graphics.printf('Timer: ' .. tostring(self.timer), 20, 108, 182, 'center')
 
 	-- Debug printing
-	love.graphics.print('cursorX: ' .. (self.cursorX .. ''), 8 , VIRTUAL_HEIGHT/2)
-	love.graphics.print('cursorY: ' .. (self.cursorY .. ''), 8 , VIRTUAL_HEIGHT/2 + 50)
-	love.graphics.print('FPS: ' .. (love.timer.getFPS() .. ''), 8 , VIRTUAL_HEIGHT/2 + 100)
-
+	-- love.graphics.print('cursorX: ' .. (self.cursorX .. ''), 8 , VIRTUAL_HEIGHT/2)
+	-- love.graphics.print('cursorY: ' .. (self.cursorY .. ''), 8 , VIRTUAL_HEIGHT/2 + 20)
+	-- love.graphics.print('FPS: ' .. (love.timer.getFPS() .. ''), 8 , VIRTUAL_HEIGHT/2 + 40)
+	-- love.graphics.print('Stuck: ' .. (self.board:checkIfStuck() and 'true' or 'false'), 8 , VIRTUAL_HEIGHT/2 + 60)
 end
