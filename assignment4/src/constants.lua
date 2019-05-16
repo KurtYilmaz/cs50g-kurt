@@ -49,12 +49,15 @@ TILE_SETS = TILE_SETS_WIDE * TILE_SETS_TALL
 
 -- player walking speed
 PLAYER_WALK_SPEED = 60
+PLAYER_RUN_SPEED = 90
 
 -- player jumping velocity
-PLAYER_JUMP_VELOCITY = -150
+PLAYER_JUMP_VELOCITY = -155
 
 -- snail movement speed
 SNAIL_MOVE_SPEED = 10
+-- AS4.X - adding turn lag to snails
+SNAIL_TURN_LAG = 1
 
 --
 -- tile IDs
@@ -88,10 +91,20 @@ GEMS = {
 
 JUMP_BLOCKS = {}
 
--- AS4.0 - adding control options
+-- AS4.3 - Adding number of flags and poles, matching above style
+FLAGS = {
+	1, 2, 3, 4
+}
+
+POLES = {
+	1, 2, 3, 4, 5, 6
+}
+
+-- AS4.X - adding control options
 PLAYER_LEFT = 'a'
 PLAYER_RIGHT = 'd'
 PLAYER_JUMP = 'space'
+PLAYER_RUN = 'lshift'
 
 for i = 1, 30 do
 	table.insert(JUMP_BLOCKS, i)
