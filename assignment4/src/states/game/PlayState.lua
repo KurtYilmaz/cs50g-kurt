@@ -223,7 +223,7 @@ function PlayState:spawnEnemies()
 					groundFound = true
 
 					-- random chance, 1 in 10
-					if math.random(10) == 1 then
+					if math.random(2) == 1 then
 						local snailType = (math.random(4) < 3) and 1 or 2
 
 						-- instantiate snail, declaring in advance so we can pass it into state machine

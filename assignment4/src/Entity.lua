@@ -54,8 +54,8 @@ function Entity:update(dt)
 end
 
 function Entity:collides(entity)
-	return not (self.x > entity.x + 1 + entity.width or entity.x - 1 > self.x + self.width or
-				self.y > entity.y + 1 + entity.height or entity.y - 1 > self.y + self.height)
+	return not (self.x > entity.x - 2 + entity.width or entity.x + 2 > self.x + self.width or
+				self.y > entity.y - 2 + entity.height or entity.y + 2 > self.y + self.height)
 end
 
 function Entity:render()
