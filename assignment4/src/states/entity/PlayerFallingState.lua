@@ -98,8 +98,9 @@ function PlayerFallingState:update(dt)
 				table.remove(self.player.level.entities, k)
 			else
 				entity.hp = entity.hp - 1
-				self.player.y = self.player.y - 1
 			end
+
+			self.player.y = self.player.y - 1
 
 			self.player:changeState('jump', {heightMod = PLAYER_JUMP_VELOCITY / 2, xMomentum = self.xMomentum})
 		end
