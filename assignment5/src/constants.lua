@@ -1,18 +1,18 @@
 --[[
-    GD50
-    Legend of Zelda
+	GD50
+	Legend of Zelda
 
-    -- constants --
+	-- constants --
 
-    Author: Colton Ogden
-    cogden@cs50.harvard.edu
+	Author: Colton Ogden
+	cogden@cs50.harvard.edu
 ]]
 
 VIRTUAL_WIDTH = 384
 VIRTUAL_HEIGHT = 216
 
-WINDOW_WIDTH = 1280
-WINDOW_HEIGHT = 720
+WINDOW_WIDTH = 1152
+WINDOW_HEIGHT = 648
 
 TILE_SIZE = 16
 
@@ -41,14 +41,21 @@ TILE_BOTTOM_RIGHT_CORNER = 24
 TILE_EMPTY = 19
 
 TILE_FLOORS = {
-    7, 8, 9, 10, 11, 12, 13,
-    26, 27, 28, 29, 30, 31, 32,
-    45, 46, 47, 48, 49, 50, 51,
-    64, 65, 66, 67, 68, 69, 70,
-    88, 89, 107, 108
+	7, 8, 9, 10, 11, 12, 13,
+	26, 27, 28, 29, 30, 31, 32,
+	45, 46, 47, 48, 49, 50, 51,
+	64, 65, 66, 67, 68, 69, 70,
+	88, 89, 107, 108
 }
 
 TILE_TOP_WALLS = {58, 59, 60}
 TILE_BOTTOM_WALLS = {79, 80, 81}
 TILE_LEFT_WALLS = {77, 96, 115}
 TILE_RIGHT_WALLS = {78, 97, 116}
+
+-- AS5.X - control options
+PLAYER_LEFT = 'a'
+PLAYER_RIGHT = 'd'
+PLAYER_UP = 'w'
+PLAYER_DOWN = 's'
+PLAYER_ATTACK = 'space'
