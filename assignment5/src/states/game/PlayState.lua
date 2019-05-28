@@ -15,14 +15,14 @@ function PlayState:init()
 		hitbox = ENTITY_DEFS['player'].hitbox,
 		hurtbox = ENTITY_DEFS['player'].hurtbox,
 
-		x = VIRTUAL_WIDTH / 2 - 8,
-		y = VIRTUAL_HEIGHT / 2 - 11,
+		x = PLAYER_START_X,
+		y = PLAYER_START_Y,
 
 		width = 16,
 		height = 22,
 
 		-- one heart == 2 health
-		health = 6,
+		health = PLAYER_MAX_HEALTH,
 
 		-- rendering and collision offset for spaced sprites
 		offsetY = 5
@@ -34,7 +34,8 @@ function PlayState:init()
 	self.player.stateMachine = StateMachine {
 		['walk'] = function() return PlayerWalkState(self.player, self.dungeon) end,
 		['idle'] = function() return PlayerIdleState(self.player) end,
-		['swing-sword'] = function() return PlayerSwingSwordState(self.player, self.dungeon) end
+		['swing-sword'] = function() return PlayerSwingSwordState(self.player, self.dungeon) end,
+		['damage'] = function() return PlayerDamageState(self.player) end
 	}
 	self.player:changeState('idle')
 end

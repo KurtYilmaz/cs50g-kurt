@@ -10,6 +10,7 @@ Player = Class{__includes = Entity}
 
 function Player:init(def)
 	Entity.init(self, def)
+	self:goInvulnerable(1.5)
 end
 
 function Player:update(dt)
@@ -17,10 +18,16 @@ function Player:update(dt)
 end
 
 function Player:collides(target)
-	local selfY, selfHeight = self.y + self.height / 2, self.height - self.height / 2
+	-- Triggers for everything but doorways
+	if target.room == nil then
+		return not (self.hurtbox.x + self.hurtbox.width < target.x or self.hurtbox.x > target.x + target.width or
+					self.hurtbox.y + self.hurtbox.height < target.y or self.hurtbox.y > target.y + target.height)
 
-	return not (self.x + self.width < target.x or self.x > target.x + target.width or
-				selfY + selfHeight < target.y or selfY > target.y + target.height)
+	-- Triggers for doorways only. Allows doorway logic to be separate from hurtboxes
+	else
+		return not (self.x + self.width < target.x or self.x > target.x + target.width or
+					self.hurtbox.y + self.hurtbox.height < target.y or self.hurtbox.y > target.y + target.height)
+	end
 end
 
 function Player:render()

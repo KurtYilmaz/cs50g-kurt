@@ -24,6 +24,11 @@ end
 
 function EntityWalkState:update(dt)
 
+	if self.entity.health <= 0 then
+		self.entity:changeState('idle')
+		return
+	end
+
 	-- assume we didn't hit a wall
 	self.bumped = false
 
@@ -59,23 +64,50 @@ function EntityWalkState:update(dt)
 			self.bumped = true
 		end
 	end
+
+	for k, object in pairs(self.dungeon.currentRoom.objects) do
+		if object.solid and (not self.entity.flier) then
+			if self.entity:collides(object) then
+				self.bumped = true
+				self.entity:unCollide(object)
+			end
+		end
+	end
+
 	self.entity.hitbox:move(self.entity.x, self.entity.y)
 	self.entity.hurtbox:move(self.entity.x, self.entity.y)
 end
 
 function EntityWalkState:processAI(params, dt)
 	local room = params.room
-	local directions = {'left', 'right', 'up', 'down'}
-
-	if self.moveDuration == 0 or self.bumped then
-
+	local directions
+	if self.bumped then
+		-- AS5.2 - forcing to walk a different direction than before
+		-- Avoids buggy behavior
+		-- Commented out for time being
+			-- if self.entity.direction == 'up' then
+			-- 	directions = {'left', 'right', 'down'}
+			-- elseif self.entity.direction == 'down' then
+			-- 	directions = {'left', 'right', 'up'}
+			-- elseif self.entity.direction == 'right' then
+			-- 	directions = {'left', 'up', 'down'}
+			-- else
+			-- 	directions = {'right', 'up', 'down'}
+			-- end
+			-- self.moveDuration = math.random(4)
+			-- self.entity.direction = directions[math.random(#directions)]
+			-- self.entity:changeAnimation('walk-' .. tostring(self.entity.direction))
+		self.entity:changeState('idle')
+		self.bumped = false
+	elseif self.moveDuration == 0 then
+		directions = {'left', 'right', 'up', 'down'}
 		-- set an initial move duration and direction
 		self.moveDuration = math.random(5)
 		self.entity.direction = directions[math.random(#directions)]
 		self.entity:changeAnimation('walk-' .. tostring(self.entity.direction))
 	elseif self.movementTimer > self.moveDuration then
 		self.movementTimer = 0
-
+		directions = {'left', 'right', 'up', 'down'}
 		-- chance to go idle
 		if math.random(3) == 1 then
 			self.entity:changeState('idle')

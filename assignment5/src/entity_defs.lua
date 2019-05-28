@@ -11,15 +11,15 @@ ENTITY_DEFS = {
 		walkSpeed = PLAYER_WALK_SPEED,
 		hitbox = {
 			padX = 1,
-			padY = 1,
-			width = 14,
-			height = 20,
+			padY = 11,
+			width = 13,
+			height = 9,
 		},
 		hurtbox = {
 			padX = 1,
-			padY = 1,
-			width = 14,
-			height = 20,
+			padY = 11,
+			width = 13,
+			height = 9,
 		},
 		animations = {
 			['walk-left'] = {
@@ -88,15 +88,15 @@ ENTITY_DEFS = {
 		texture = 'entities',
 		hitbox = {
 			padX = 4,
-			padY = 1,
+			padY = 5,
 			width = 7,
-			height = 14,
+			height = 10,
 		},
 		hurtbox = {
 			padX = 4,
-			padY = 1,
+			padY = 5,
 			width = 7,
-			height = 14,
+			height = 10,
 		},
 		animations = {
 			['walk-left'] = {
@@ -127,21 +127,22 @@ ENTITY_DEFS = {
 			['idle-up'] = {
 				frames = {47}
 			}
-		}
+		},
+		flier = false
 	},
 	['slime'] = {
 		texture = 'entities',
 		hitbox = {
 			padX = 2,
-			padY = 4,
+			padY = 5,
 			width = 12,
-			height = 10,
+			height = 9,
 		},
 		hurtbox = {
 			padX = 2,
-			padY = 4,
+			padY = 5,
 			width = 12,
-			height = 10,
+			height = 9,
 		},
 		animations = {
 			['walk-left'] = {
@@ -172,7 +173,8 @@ ENTITY_DEFS = {
 			['idle-up'] = {
 				frames = {86}
 			}
-		}
+		},
+		flier = false
 	},
 	['bat'] = {
 		texture = 'entities',
@@ -221,7 +223,8 @@ ENTITY_DEFS = {
 				frames = {88, 89, 90, 89},
 				interval = 0.2
 			}
-		}
+		},
+		flier = true
 	},
 	['ghost'] = {
 		texture = 'entities',
@@ -266,20 +269,21 @@ ENTITY_DEFS = {
 			['idle-up'] = {
 				frames = {92}
 			}
-		}
+		},
+		flier = true
 	},
 	['spider'] = {
 		texture = 'entities',
 		hitbox = {
-			padX = 2,
+			padX = 3,
 			padY = 7,
-			width = 11,
+			width = 9,
 			height = 8,
 		},
 		hurtbox = {
-			padX = 2,
+			padX = 3,
 			padY = 7,
-			width = 11,
+			width = 9,
 			height = 8,
 		},
 		animations = {
@@ -311,6 +315,7 @@ ENTITY_DEFS = {
 			['idle-up'] = {
 				frames = {95}
 			}
-		}
+		},
+		flier = false
 	}
 }

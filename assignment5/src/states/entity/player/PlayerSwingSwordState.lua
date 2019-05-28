@@ -23,21 +23,21 @@ function PlayerSwingSwordState:init(player, dungeon)
 
 	if direction == 'left' then
 		hitboxWidth = 10
-		hitboxHeight = 20
+		hitboxHeight = 18
 		padX = -hitboxWidth
-		padY = 0
+		padY = 2
 	elseif direction == 'right' then
 		hitboxWidth = 10
-		hitboxHeight = 20
+		hitboxHeight = 18
 		padX = self.player.width
-		padY = 0
+		padY = 2
 	elseif direction == 'up' then
-		hitboxWidth = 20
+		hitboxWidth = 18
 		hitboxHeight = 10
 		padX = -2
 		padY = -hitboxHeight
 	else
-		hitboxWidth = 20
+		hitboxWidth = 19
 		hitboxHeight = 10
 		padX = -2
 		padY = self.player.height - 2
@@ -54,6 +54,7 @@ function PlayerSwingSwordState:init(player, dungeon)
 end
 
 function PlayerSwingSwordState:enter(params)
+	gSounds['sword']:setVolume(0.6)
 	gSounds['sword']:stop()
 	gSounds['sword']:play()
 
@@ -65,8 +66,18 @@ function PlayerSwingSwordState:update(dt)
 	self.swordHitbox:move(self.player.x, self.player.y)
 	-- check if hitbox collides with any entities in the scene
 	for k, entity in pairs(self.dungeon.currentRoom.entities) do
-		if entity:collides(self.swordHitbox) then
+		if entity:collides(self.swordHitbox) and not entity.dead then
+			if self.player.direction == 'left' then
+				entity.directionHit = 'right'
+			elseif self.player.direction == 'right' then
+				entity.directionHit = 'left'
+			elseif self.player.direction == 'up' then
+				entity.directionHit = 'down'
+			elseif self.player.direction == 'down' then
+				entity.directionHit = 'up'
+			end
 			entity:damage(1)
+			gSounds['hit-enemy']:setVolume(0.6)
 			gSounds['hit-enemy']:play()
 		end
 	end

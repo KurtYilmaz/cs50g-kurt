@@ -30,6 +30,8 @@ require 'src/states/entity/EntityWalkState'
 require 'src/states/entity/player/PlayerIdleState'
 require 'src/states/entity/player/PlayerSwingSwordState'
 require 'src/states/entity/player/PlayerWalkState'
+-- AS5.X - Player can't move while in damage state
+require 'src/states/entity/player/PlayerDamageState'
 
 require 'src/states/game/GameOverState'
 require 'src/states/game/PlayState'
@@ -70,8 +72,10 @@ gSounds = {
 	['sword'] = love.audio.newSource('sounds/sword.wav'),
 	['hit-enemy'] = love.audio.newSource('sounds/hit_enemy.wav'),
 	['hit-player'] = love.audio.newSource('sounds/hit_player.wav'),
-	['door'] = love.audio.newSource('sounds/door.wav')
+	['door'] = love.audio.newSource('sounds/door.wav'),
+	-- AS5.1 - sound effect for heart added
+	['life-up'] = love.audio.newSource('sounds/life_up.wav')
 }
 
 -- AS5.X - debug flag for rendering hitboxes and hurtboxes
-gRenderHitboxes = false
+gRenderHitboxes = true

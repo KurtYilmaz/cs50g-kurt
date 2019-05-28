@@ -8,20 +8,27 @@
 
 Room = Class{}
 
-function Room:init(player)
+-- AS5.2 - Room needed reference to dungeon for solid pots
+--[[ Entity walkstate includes dungeon, and entities generated in Room
+	 did not have access to the dungeon. Alternatively I could tweak the
+	existing code to take rooms instead of dungeons, but that is more
+	work than it's worth.]]
+function Room:init(player, dungeon)
+	self.dungeon = dungeon
+
 	self.width = MAP_WIDTH
 	self.height = MAP_HEIGHT
 
-	self.tiles = {}
-	self:generateWallsAndFloors()
+	-- game objects in the room
+	self.objects = {}
+	self:generateObjects()
 
 	-- entities in the room
 	self.entities = {}
 	self:generateEntities()
 
-	-- game objects in the room
-	self.objects = {}
-	self:generateObjects()
+	self.tiles = {}
+	self:generateWallsAndFloors()
 
 	-- doorways that lead to other dungeon rooms
 	self.doorways = {}
@@ -67,12 +74,20 @@ function Room:generateEntities()
 			width = 16,
 			height = 16,
 
-			health = 1
+			health = 1,
+			-- AS5.1 - onDeath, entity has a chance to drop a heart
+			onDeath = function(entity)
+				if math.random(8) > 6 then
+					Timer.after(KNOCKBACK_SPEED + 0.8, function()
+						table.insert(self.objects, GameObject(GAME_OBJECT_DEFS['heart'], entity.x, entity.y))
+					end)
+				end
+			end
 		})
 
 		self.entities[i].stateMachine = StateMachine {
-			['walk'] = function() return EntityWalkState(self.entities[i]) end,
-			['idle'] = function() return EntityIdleState(self.entities[i]) end
+			['walk'] = function() return EntityWalkState(self.entities[i], self.dungeon) end,
+			['idle'] = function() return EntityIdleState(self.entities[i], self.dungeon) end
 		}
 
 		self.entities[i]:changeState('walk')
@@ -140,6 +155,12 @@ function Room:generateWallsAndFloors()
 				id = TILE_BOTTOM_WALLS[math.random(#TILE_BOTTOM_WALLS)]
 			else
 				id = TILE_FLOORS[math.random(#TILE_FLOORS)]
+				-- AS5.2 - generate pots
+				-- generating here instead of objects function guarantees unique spaces
+				if math.random(25) > 22 and math.abs(x * TILE_SIZE - PLAYER_START_X) > 2 and
+						math.abs(y * TILE_SIZE - PLAYER_START_Y) > 2 then
+					table.insert(self.objects, GameObject(GAME_OBJECT_DEFS['pot'], x * TILE_SIZE, y * TILE_SIZE))
+				end
 			end
 
 			table.insert(self.tiles[y], {
@@ -157,19 +178,28 @@ function Room:update(dt)
 
 	for i = #self.entities, 1, -1 do
 		local entity = self.entities[i]
-
-		-- mark entity as dead if health is <= 0
-		if entity.health <= 0 then
-			entity:death()
-		elseif not entity.dead then
+		if not entity.dead then
 			entity:processAI({room = self}, dt)
 		end
 
 		entity:update(dt)
 
 		-- collision between the player and entities in the room
-		if not entity.dead and self.player:collides(entity) and not self.player.invulnerable then
+		if not entity.dead and self.player:collides(entity.hitbox) and not self.player.invulnerable then
+			-- AS5.X - Logic for drection of player knockback if idle
+			if self.player.idle then
+				if entity.direction == 'right' then
+					self.player.directionHit = 'left'
+				elseif entity.direction == 'left' then
+					self.player.directionHit = 'right'
+				elseif entity.direction == 'down' then
+					self.player.directionHit = 'up'
+				else
+					self.player.directionHit = 'down'
+				end
+			end
 			gSounds['hit-player']:play()
+			self.player:changeState('damage')
 			self.player:damage(1)
 			self.player:goInvulnerable(1.5)
 
@@ -184,7 +214,10 @@ function Room:update(dt)
 
 		-- trigger collision callback on object
 		if self.player:collides(object) then
-			object:onCollide()
+			object.onCollide(self.player, object)
+			if object.consumed then
+				table.remove(self.objects, k)
+			end
 		end
 	end
 end
@@ -239,4 +272,7 @@ function Room:render()
 	end
 
 	love.graphics.setStencilTest()
+
+	-- love.graphics.printf(self.player.health, 0, 0, VIRTUAL_WIDTH, 'right')
+	love.graphics.printf(#self.objects, 0, 60, VIRTUAL_WIDTH, 'right')
 end

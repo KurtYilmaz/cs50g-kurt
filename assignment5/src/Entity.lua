@@ -29,6 +29,9 @@ function Entity:init(def)
 
 	self.health = def.health
 
+	-- AS5.X - Flying enemies can pass over obstacles
+	self.flier = def.flier
+
 	-- AS5.X - adding hitboxes and hitboxes for each creature
 	-- They come from the same hitbox class, just used differently
 	self.hitbox = Hitbox {
@@ -52,18 +55,22 @@ function Entity:init(def)
 	self.invulnerableDuration = 0
 	self.invulnerableTimer = 0
 	self.flashTimer = 0
-
+	-- AS5.X - direction entity was hit for knockback
+	self.directionHit = 'none'
 	self.dead = false
 
 	-- AS5.X = Particle system for dead enemies
-	self.psystem = love.graphics.newParticleSystem(gTextures['particle'], 16)
+	self.psystem = love.graphics.newParticleSystem(gTextures['particle'], 32)
 	self.psystem:setParticleLifetime(0.5, 1)
 	self.psystem:setEmitterLifetime(0.5)
-	self.psystem:setEmissionRate(20)
+	self.psystem:setEmissionRate(32)
 	-- self.psystem:setSizeVariation(0)
-	self.psystem:setLinearAcceleration(-20, -20, 20, 20)
 	self.psystem:setAreaSpread('uniform', 1, 1)
 	self.psystem:setColors(0, 0, 255, 255, 255, 0, 255, 255)
+	self.damageFlash = false
+
+	-- AS5.1 - onDeath function for generating hearts
+	self.onDeath = def.onDeath
 
 end
 
@@ -89,35 +96,100 @@ function Entity:collides(target)
 				self.hurtbox.y + self.height < target.y or self.hurtbox.y > target.y + target.height)
 end
 
+-- AS5.2 - preventing buggy interaction with pots, uncollides entity with target
+function Entity:unCollide(target)
+	--while (self:collides(target)) do
+		local boxEndX = self.hurtbox.x + self.width
+		local boxEndY = self.hurtbox.y + self.height
+		local tEndX = target.x + target.width
+		local tEndY = target.y + target.height
+
+		if boxEndX >= target.x and self.hurtbox.x <= tEndX then
+			if math.abs(boxEndX - target.x) < math.abs(self.hurtbox.x - tEndX) then
+				self.x = self.x - 1
+			elseif math.abs(boxEndX - target.x) > math.abs(self.hurtbox.x - tEndX) then
+				self.x = self.x + 1
+			end
+		end
+		if boxEndY >= target.y and self.hurtbox.y <= tEndY then
+			if math.abs(boxEndY - target.y) < math.abs(self.hurtbox.y - tEndY) then
+				self.y = self.y - 1
+			elseif math.abs(boxEndY - target.y) > math.abs(self.hurtbox.y - tEndY) then
+				self.y = self.y + 1
+			end
+		end
+	--end
+end
+
+-- AS5.X - Damage function adds knockback
 function Entity:damage(dmg)
-	self.health = self.health - dmg
-	if self.direction == 'down' then
-		-- Timer.tween(0.3, {
-		-- 	[self] = {self.y = math.min(MAP_RENDER_OFFSET_Y + TILE_SIZE - self.entity.height / 2, self.y - (3 * TILE_SIZE))}
-		-- })
-	elseif self.direction == 'up' then
-		-- Timer.tween(0.3, {
-		-- 	[self] = {self. y =  math.min(VIRTUAL_HEIGHT -
-		-- 				(VIRTUAL_HEIGHT - MAP_HEIGHT * TILE_SIZE) +
-		-- 				MAP_RENDER_OFFSET_Y - TILE_SIZE, self.y - (3 * TILE_SIZE))}
-		-- })
-	elseif self.direction == 'left' then
-		-- Timer.tween(0.3, {
-		-- 	[self] = {self.x =  math.min(VIRTUAL_WIDTH - TILE_SIZE * 2 -
-		-- 				self.entity.width, self.y - (3 * TILE_SIZE))}
-		-- })
-	elseif self.direction == 'right' then
-		-- Timer.tween(0.3, {
-		-- 	[self] = {self.x =  math.min(MAP_RENDER_OFFSET_X + TILE_SIZE -
-		-- 				self.entity.height / 2, self.y - (3 * TILE_SIZE))}
-		-- })
+	-- Preventing death loop
+	if self.health > 0 then
+		self.health = self.health - dmg
+		self.damageFlash = true
+		Timer.after(1, function()
+			self.damageFlash = false
+		end)
+		if self.directionHit == 'down' or (self.directionHit == 'none' and self.direction == 'down')  then
+			Timer.tween(KNOCKBACK_SPEED, {
+				[self] = {y = math.max(MAP_RENDER_OFFSET_Y + TILE_SIZE - self.height / 2, self.y - (2 * TILE_SIZE))}
+			}):finish(function()
+				if self.health <= 0 then
+					self:death()
+				end
+			end)
+		elseif self.directionHit == 'up' or (self.directionHit == 'none' and self.direction == 'up') then
+			Timer.tween(KNOCKBACK_SPEED, {
+				[self] = {y =  math.min(VIRTUAL_HEIGHT -
+							(VIRTUAL_HEIGHT - MAP_HEIGHT * TILE_SIZE) +
+							MAP_RENDER_OFFSET_Y - TILE_SIZE - self.height, self.y + (2 * TILE_SIZE))}
+			}):finish(function()
+				if self.health <= 0 then
+					self:death()
+				end
+			end)
+		elseif self.directionHit == 'left' or (self.directionHit == 'none' and self.direction == 'left') then
+			Timer.tween(KNOCKBACK_SPEED, {
+				[self] = {x =  math.min(VIRTUAL_WIDTH - TILE_SIZE * 2 - self.width, self.x + (2 * TILE_SIZE))}
+			}):finish(function()
+				if self.health <= 0 then
+					self:death()
+				end
+			end)
+		elseif self.directionHit == 'right' or (self.directionHit == 'none' and self.direction == 'right') then
+			Timer.tween(KNOCKBACK_SPEED, {
+				[self] = {x =  math.max(MAP_RENDER_OFFSET_X + TILE_SIZE - self.height / 2, self.x - (2 * TILE_SIZE))}
+			}):finish(function()
+				if self.health <= 0 then
+					self:death()
+				end
+			end)
+		end
 	end
 end
 
 -- AS5.X - Death function kills and emits
 function Entity:death()
+	if self.directionHit == 'right' then
+		self.psystem:setLinearAcceleration(-50, -20, -20, 20)
+	elseif self.directionHit == 'left' then
+		self.psystem:setLinearAcceleration(20, -20, 50, 20)
+	elseif self.directionHit == 'up' then
+		self.psystem:setLinearAcceleration(-20, 20, 20, 50)
+	elseif self.directionHit == 'down' then
+		self.psystem:setLinearAcceleration(-20, -50, 20, -20)
+	else
+		self.psystem:setLinearAcceleration(-20, -20, 20, 20)
+	end
+
+	self.psystem:emit(32)
+
+	-- AS5.1 - onDeath function for dropping hearts
+	if self.onDeath ~= nil then
+		self.onDeath(self)
+	end
+
 	self.dead = true
-	self.psystem:emit(16)
 end
 
 function Entity:goInvulnerable(duration)
@@ -173,13 +245,16 @@ function Entity:render(adjacentOffsetX, adjacentOffsetY)
 			self.hurtbox:render(0, 255, 0)
 		end
 
+		if self.damageFlash and not self.invulnerable then
+			 love.graphics.setColor(255, 0, 0, 255)
 		-- draw sprite slightly transparent if invulnerable every 0.04 seconds
-		if self.invulnerable and self.flashTimer > 0.06 then
+		elseif self.invulnerable and self.flashTimer > 0.06 then
 			self.flashTimer = 0
 			love.graphics.setColor(255, 255, 255, 64)
 		end
 
 		self.x, self.y = self.x + (adjacentOffsetX or 0), self.y + (adjacentOffsetY or 0)
+
 		self.stateMachine:render()
 		love.graphics.setColor(255, 255, 255, 255)
 		self.x, self.y = self.x - (adjacentOffsetX or 0), self.y - (adjacentOffsetY or 0)
