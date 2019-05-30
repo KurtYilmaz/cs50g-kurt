@@ -11,6 +11,8 @@ PlayerWalkState = Class{__includes = EntityWalkState}
 function PlayerWalkState:init(player, dungeon)
 	self.entity = player
 	self.dungeon = dungeon
+	-- AS5.2 - needs room to go with EntityWalkState
+	self.entity.room = dungeon.currentRoom
 
 	-- render offset for spaced character sprite
 	self.entity.offsetY = 5

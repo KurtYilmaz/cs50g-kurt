@@ -24,18 +24,18 @@ function PlayerSwingSwordState:init(player, dungeon)
 	if direction == 'left' then
 		hitboxWidth = 10
 		hitboxHeight = 18
-		padX = -hitboxWidth
+		padX = -hitboxWidth + self.player.hurtbox.padX
 		padY = 2
 	elseif direction == 'right' then
 		hitboxWidth = 10
 		hitboxHeight = 18
-		padX = self.player.width
+		padX = self.player.hurtbox.width
 		padY = 2
 	elseif direction == 'up' then
 		hitboxWidth = 18
 		hitboxHeight = 10
 		padX = -2
-		padY = -hitboxHeight
+		padY = -hitboxHeight + self.player.hurtbox.padY - 1
 	else
 		hitboxWidth = 19
 		hitboxHeight = 10

@@ -88,13 +88,13 @@ ENTITY_DEFS = {
 		texture = 'entities',
 		hitbox = {
 			padX = 4,
-			padY = 5,
+			padY = 6,
 			width = 7,
 			height = 10,
 		},
 		hurtbox = {
 			padX = 4,
-			padY = 5,
+			padY = 6,
 			width = 7,
 			height = 10,
 		},
@@ -127,8 +127,7 @@ ENTITY_DEFS = {
 			['idle-up'] = {
 				frames = {47}
 			}
-		},
-		flier = false
+		}
 	},
 	['slime'] = {
 		texture = 'entities',
@@ -173,11 +172,11 @@ ENTITY_DEFS = {
 			['idle-up'] = {
 				frames = {86}
 			}
-		},
-		flier = false
+		}
 	},
 	['bat'] = {
 		texture = 'entities',
+		flier = true,
 		hitbox = {
 			padX = 5,
 			padY = 4,
@@ -223,11 +222,11 @@ ENTITY_DEFS = {
 				frames = {88, 89, 90, 89},
 				interval = 0.2
 			}
-		},
-		flier = true
+		}
 	},
 	['ghost'] = {
 		texture = 'entities',
+		flier = true,
 		hitbox = {
 			padX = 2,
 			padY = 1,
@@ -269,8 +268,7 @@ ENTITY_DEFS = {
 			['idle-up'] = {
 				frames = {92}
 			}
-		},
-		flier = true
+		}
 	},
 	['spider'] = {
 		texture = 'entities',
@@ -315,7 +313,6 @@ ENTITY_DEFS = {
 			['idle-up'] = {
 				frames = {95}
 			}
-		},
-		flier = false
+		}
 	}
 }

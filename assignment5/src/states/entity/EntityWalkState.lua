@@ -8,11 +8,9 @@
 
 EntityWalkState = Class{__includes = BaseState}
 
-function EntityWalkState:init(entity, dungeon)
+function EntityWalkState:init(entity)
 	self.entity = entity
 	self.entity:changeAnimation('walk-down')
-
-	self.dungeon = dungeon
 
 	-- used for AI control
 	self.moveDuration = 0
@@ -65,11 +63,13 @@ function EntityWalkState:update(dt)
 		end
 	end
 
-	for k, object in pairs(self.dungeon.currentRoom.objects) do
-		if object.solid and (not self.entity.flier) then
-			if self.entity:collides(object) then
-				self.bumped = true
-				self.entity:unCollide(object)
+	if self.entity.flier == false then
+		for k, object in pairs(self.entity.room.objects) do
+			if object.solid then
+				if self.entity:collides(object) then
+					self.bumped = true
+					self.entity:unCollide(object, dt)
+				end
 			end
 		end
 	end
@@ -78,33 +78,34 @@ function EntityWalkState:update(dt)
 	self.entity.hurtbox:move(self.entity.x, self.entity.y)
 end
 
-function EntityWalkState:processAI(params, dt)
-	local room = params.room
+function EntityWalkState:processAI(dt)
 	local directions
-	if self.bumped then
-		-- AS5.2 - forcing to walk a different direction than before
-		-- Avoids buggy behavior
-		-- Commented out for time being
-			-- if self.entity.direction == 'up' then
-			-- 	directions = {'left', 'right', 'down'}
-			-- elseif self.entity.direction == 'down' then
-			-- 	directions = {'left', 'right', 'up'}
-			-- elseif self.entity.direction == 'right' then
-			-- 	directions = {'left', 'up', 'down'}
-			-- else
-			-- 	directions = {'right', 'up', 'down'}
-			-- end
-			-- self.moveDuration = math.random(4)
-			-- self.entity.direction = directions[math.random(#directions)]
-			-- self.entity:changeAnimation('walk-' .. tostring(self.entity.direction))
-		self.entity:changeState('idle')
-		self.bumped = false
-	elseif self.moveDuration == 0 then
+	-- if self.bumped then
+	-- 	-- AS5.2 - forcing to walk a different direction than before
+	-- 	-- Avoids buggy behavior
+	-- 	-- if self.entity.direction == 'up' then
+	-- 	-- 	directions = {'left', 'right', 'down'}
+	-- 	-- elseif self.entity.direction == 'down' then
+	-- 	-- 	directions = {'left', 'right', 'up'}
+	-- 	-- elseif self.entity.direction == 'right' then
+	-- 	-- 	directions = {'left', 'up', 'down'}
+	-- 	-- else
+	-- 	-- 	directions = {'right', 'up', 'down'}
+	-- 	-- end
+	-- 	-- self.moveDuration = math.random(5)
+	-- 	-- self.entity.direction = directions[math.random(#directions)]
+	-- 	-- self.entity:changeAnimation('walk-' .. tostring(self.entity.direction))
+	-- 	-- self.entity:changeState('idle')
+	-- 	self.bumped = false
+	if self.moveDuration == 0 or self.bumped then
 		directions = {'left', 'right', 'up', 'down'}
 		-- set an initial move duration and direction
 		self.moveDuration = math.random(5)
 		self.entity.direction = directions[math.random(#directions)]
 		self.entity:changeAnimation('walk-' .. tostring(self.entity.direction))
+		if self.bumped then
+			self.bumped = false
+		end
 	elseif self.movementTimer > self.moveDuration then
 		self.movementTimer = 0
 		directions = {'left', 'right', 'up', 'down'}

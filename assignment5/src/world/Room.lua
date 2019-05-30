@@ -8,27 +8,37 @@
 
 Room = Class{}
 
--- AS5.2 - Room needed reference to dungeon for solid pots
---[[ Entity walkstate includes dungeon, and entities generated in Room
-	 did not have access to the dungeon. Alternatively I could tweak the
-	existing code to take rooms instead of dungeons, but that is more
-	work than it's worth.]]
-function Room:init(player, dungeon)
-	self.dungeon = dungeon
+function Room:init(player)
 
 	self.width = MAP_WIDTH
 	self.height = MAP_HEIGHT
+
+	-- reference to player for collisions, etc.
+	self.player = player
+
+	-- AS5.2 - Preventing clipping of objects, entities, and player at the start
+	self.occupiedTiles = {}
+	for i = 1, self.height do
+		self.occupiedTiles[i] = {}
+	end
+	-- Giving player room at the start
+	self.playerStartX = math.floor((player.x - MAP_RENDER_OFFSET_X) / TILE_SIZE)
+	self.playerStartY = math.floor((player.y - MAP_RENDER_OFFSET_Y) / TILE_SIZE)
+	for i=0, 2 do
+		self:fillTile(self.playerStartX, self.playerStartY + i)
+		self:fillTile(self.playerStartX + 1, self.playerStartY + i)
+	end
 
 	-- game objects in the room
 	self.objects = {}
 	self:generateObjects()
 
+	self.tiles = {}
+	self:generateWallsAndFloors()
+
 	-- entities in the room
 	self.entities = {}
 	self:generateEntities()
-
-	self.tiles = {}
-	self:generateWallsAndFloors()
 
 	-- doorways that lead to other dungeon rooms
 	self.doorways = {}
@@ -36,9 +46,6 @@ function Room:init(player, dungeon)
 	table.insert(self.doorways, Doorway('bottom', false, self))
 	table.insert(self.doorways, Doorway('left', false, self))
 	table.insert(self.doorways, Doorway('right', false, self))
-
-	-- reference to player for collisions, etc.
-	self.player = player
 
 	-- used for centering the dungeon rendering
 	self.renderOffsetX = MAP_RENDER_OFFSET_X
@@ -58,18 +65,19 @@ function Room:generateEntities()
 
 	for i = 1, 10 do
 		local type = types[math.random(#types)]
+		local entityX, entityY = self:placeEntity()
 
 		table.insert(self.entities, Entity {
 			animations = ENTITY_DEFS[type].animations,
 			walkSpeed = ENTITY_DEFS[type].walkSpeed or 20,
 			hitbox = ENTITY_DEFS[type].hitbox,
 			hurtbox = ENTITY_DEFS[type].hurtbox,
+			flier = ENTITY_DEFS[type].flier,
+			room = self,
 
 			-- ensure X and Y are within bounds of the map
-			x = math.random(MAP_RENDER_OFFSET_X + TILE_SIZE,
-				VIRTUAL_WIDTH - TILE_SIZE * 2 - 16),
-			y = math.random(MAP_RENDER_OFFSET_Y + TILE_SIZE,
-				VIRTUAL_HEIGHT - (VIRTUAL_HEIGHT - MAP_HEIGHT * TILE_SIZE) + MAP_RENDER_OFFSET_Y - TILE_SIZE - 16),
+			x = entityX,
+			y = entityY,
 
 			width = 16,
 			height = 16,
@@ -86,8 +94,8 @@ function Room:generateEntities()
 		})
 
 		self.entities[i].stateMachine = StateMachine {
-			['walk'] = function() return EntityWalkState(self.entities[i], self.dungeon) end,
-			['idle'] = function() return EntityIdleState(self.entities[i], self.dungeon) end
+			['walk'] = function() return EntityWalkState(self.entities[i], self) end,
+			['idle'] = function() return EntityIdleState(self.entities[i], self) end
 		}
 
 		self.entities[i]:changeState('walk')
@@ -98,13 +106,8 @@ end
 	Randomly creates an assortment of obstacles for the player to navigate around.
 ]]
 function Room:generateObjects()
-	table.insert(self.objects, GameObject(
-		GAME_OBJECT_DEFS['switch'],
-		math.random(MAP_RENDER_OFFSET_X + TILE_SIZE,
-					VIRTUAL_WIDTH - TILE_SIZE * 2 - 16),
-		math.random(MAP_RENDER_OFFSET_Y + TILE_SIZE,
-					VIRTUAL_HEIGHT - (VIRTUAL_HEIGHT - MAP_HEIGHT * TILE_SIZE) + MAP_RENDER_OFFSET_Y - TILE_SIZE - 16)
-	))
+	local x, y = self:placeEntity()
+	table.insert(self.objects, GameObject(GAME_OBJECT_DEFS['switch'], x, y))
 
 	-- get a reference to the switch
 	local switch = self.objects[1]
@@ -121,6 +124,12 @@ function Room:generateObjects()
 
 			gSounds['door']:play()
 		end
+	end
+	local numberPots = math.random(30)
+	for i = 0, numberPots do
+		local x, y = self:placeEntity()
+		-- AS5.2 - generate pots
+		table.insert(self.objects, GameObject(GAME_OBJECT_DEFS['pot'], x, y))
 	end
 end
 
@@ -155,12 +164,6 @@ function Room:generateWallsAndFloors()
 				id = TILE_BOTTOM_WALLS[math.random(#TILE_BOTTOM_WALLS)]
 			else
 				id = TILE_FLOORS[math.random(#TILE_FLOORS)]
-				-- AS5.2 - generate pots
-				-- generating here instead of objects function guarantees unique spaces
-				if math.random(25) > 22 and math.abs(x * TILE_SIZE - PLAYER_START_X) > 2 and
-						math.abs(y * TILE_SIZE - PLAYER_START_Y) > 2 then
-					table.insert(self.objects, GameObject(GAME_OBJECT_DEFS['pot'], x * TILE_SIZE, y * TILE_SIZE))
-				end
 			end
 
 			table.insert(self.tiles[y], {
@@ -179,7 +182,7 @@ function Room:update(dt)
 	for i = #self.entities, 1, -1 do
 		local entity = self.entities[i]
 		if not entity.dead then
-			entity:processAI({room = self}, dt)
+			entity:processAI(dt)
 		end
 
 		entity:update(dt)
@@ -222,6 +225,37 @@ function Room:update(dt)
 	end
 end
 
+
+
+-- AS5.2 - Filling occupiedTiles to prevent clipping
+-- Uses grid coordinates to simplify indexes
+function Room:placeEntity()
+	local x = math.random(self.width - 2)
+	local y = math.random(self.height - 2)
+	while(self.occupiedTiles[y][x] == true) do
+		x = math.random(self.width - 2)
+		y = math.random(self.height - 2)
+	end
+	self:fillTile(x, y)
+	-- map render offset is empty space, tile_size is the wall
+	-- Gives position back in exact coordinates rather than grid
+	return MAP_RENDER_OFFSET_X + TILE_SIZE * x, MAP_RENDER_OFFSET_Y + TILE_SIZE * y
+end
+
+function Room:fillTile(x, y)
+	if self.occupiedTiles[y] == nil then
+		self.occupiedTiles[y] = {}
+	end
+	self.occupiedTiles[y][x] = true
+end
+
+function Room:emptyTile(x, y)
+	if self.occupiedTiles[y] == nil then
+		self.occupiedTiles[y] = {}
+	end
+	self.occupiedTiles[y][x] = false
+end
+
 function Room:render()
 	for y = 1, self.height do
 		for x = 1, self.width do
@@ -231,6 +265,10 @@ function Room:render()
 				(y - 1) * TILE_SIZE + self.renderOffsetY + self.adjacentOffsetY)
 		end
 	end
+
+	love.graphics.rectangle('fill', self.playerStartX * TILE_SIZE + MAP_RENDER_OFFSET_X,
+							self.playerStartY * TILE_SIZE + MAP_RENDER_OFFSET_Y,
+							TILE_SIZE * 2, TILE_SIZE * 3)
 
 	-- render doorways; stencils are placed where the arches are after so the player can
 	-- move through them convincingly
@@ -249,19 +287,19 @@ function Room:render()
 	-- stencil out the door arches so it looks like the player is going through
 	love.graphics.stencil(function()
 		-- left
-		love.graphics.rectangle('fill', -TILE_SIZE - 6, MAP_RENDER_OFFSET_Y + (MAP_HEIGHT / 2) * TILE_SIZE - TILE_SIZE,
+		love.graphics.rectangle('fill', -TILE_SIZE - 6, MAP_RENDER_OFFSET_Y + (self.height / 2) * TILE_SIZE - TILE_SIZE,
 			TILE_SIZE * 2 + 6, TILE_SIZE * 2)
 
 		-- right
-		love.graphics.rectangle('fill', MAP_RENDER_OFFSET_X + (MAP_WIDTH * TILE_SIZE) - 6,
-			MAP_RENDER_OFFSET_Y + (MAP_HEIGHT / 2) * TILE_SIZE - TILE_SIZE, TILE_SIZE * 2 + 6, TILE_SIZE * 2)
+		love.graphics.rectangle('fill', MAP_RENDER_OFFSET_X + (self.width * TILE_SIZE) - 6,
+			MAP_RENDER_OFFSET_Y + (self.height / 2) * TILE_SIZE - TILE_SIZE, TILE_SIZE * 2 + 6, TILE_SIZE * 2)
 
 		-- top
-		love.graphics.rectangle('fill', MAP_RENDER_OFFSET_X + (MAP_WIDTH / 2) * TILE_SIZE - TILE_SIZE,
+		love.graphics.rectangle('fill', MAP_RENDER_OFFSET_X + (self.width / 2) * TILE_SIZE - TILE_SIZE,
 			-TILE_SIZE - 6, TILE_SIZE * 2, TILE_SIZE * 2 + 12)
 
 		--bottom
-		love.graphics.rectangle('fill', MAP_RENDER_OFFSET_X + (MAP_WIDTH / 2) * TILE_SIZE - TILE_SIZE,
+		love.graphics.rectangle('fill', MAP_RENDER_OFFSET_X + (self.width / 2) * TILE_SIZE - TILE_SIZE,
 			VIRTUAL_HEIGHT - TILE_SIZE - 6, TILE_SIZE * 2, TILE_SIZE * 2 + 12)
 	end, 'replace', 1)
 
@@ -274,5 +312,15 @@ function Room:render()
 	love.graphics.setStencilTest()
 
 	-- love.graphics.printf(self.player.health, 0, 0, VIRTUAL_WIDTH, 'right')
-	love.graphics.printf(#self.objects, 0, 60, VIRTUAL_WIDTH, 'right')
+	-- love.graphics.printf(#self.objects, 0, 60, VIRTUAL_WIDTH, 'right')
+
+	if gShowGrid then
+		love.graphics.setColor(0, 0, 255, 128)
+		for x = MAP_RENDER_OFFSET_X, VIRTUAL_WIDTH, 16 do
+			for y = MAP_RENDER_OFFSET_Y, VIRTUAL_HEIGHT, 16 do
+				love.graphics.rectangle('line', x, y, TILE_SIZE, TILE_SIZE)
+			end
+		end
+		love.graphics.setColor(255, 255, 255, 255)
+	end
 end

@@ -8,7 +8,7 @@
 
 Entity = Class{}
 
-function Entity:init(def)
+function Entity:init(def, dungeon)
 
 	-- in top-down games, there are four directions instead of two
 	self.direction = 'down'
@@ -21,6 +21,9 @@ function Entity:init(def)
 	self.width = def.width
 	self.height = def.height
 
+	-- AS5.2 - needs room to keep track of pots
+	self.room = def.room
+
 	-- drawing offsets for padded sprites
 	self.offsetX = def.offsetX or 0
 	self.offsetY = def.offsetY or 0
@@ -30,7 +33,11 @@ function Entity:init(def)
 	self.health = def.health
 
 	-- AS5.X - Flying enemies can pass over obstacles
-	self.flier = def.flier
+	if def.flier ~= nil then
+		self.flier = def.flier
+	else
+		self.flier = false
+	end
 
 	-- AS5.X - adding hitboxes and hitboxes for each creature
 	-- They come from the same hitbox class, just used differently
@@ -97,28 +104,26 @@ function Entity:collides(target)
 end
 
 -- AS5.2 - preventing buggy interaction with pots, uncollides entity with target
-function Entity:unCollide(target)
-	--while (self:collides(target)) do
-		local boxEndX = self.hurtbox.x + self.width
-		local boxEndY = self.hurtbox.y + self.height
-		local tEndX = target.x + target.width
-		local tEndY = target.y + target.height
+function Entity:unCollide(target, dt)
+	local boxEndX = self.hurtbox.x + self.width
+	local boxEndY = self.hurtbox.y + self.height
+	local tEndX = target.x + target.width
+	local tEndY = target.y + target.height
 
-		if boxEndX >= target.x and self.hurtbox.x <= tEndX then
-			if math.abs(boxEndX - target.x) < math.abs(self.hurtbox.x - tEndX) then
-				self.x = self.x - 1
-			elseif math.abs(boxEndX - target.x) > math.abs(self.hurtbox.x - tEndX) then
-				self.x = self.x + 1
-			end
+	if boxEndX >= target.x and self.hurtbox.x <= tEndX then
+		if math.abs(boxEndX - target.x) < math.abs(self.hurtbox.x - tEndX) - 4 then -- "- 4" optimal for player
+			self.x = self.x - (self.walkSpeed * dt)
+		elseif math.abs(boxEndX - target.x) > math.abs(self.hurtbox.x - tEndX) + 8 then -- "+ 8" optimal for player
+			self.x = self.x + (self.walkSpeed * dt)
 		end
-		if boxEndY >= target.y and self.hurtbox.y <= tEndY then
-			if math.abs(boxEndY - target.y) < math.abs(self.hurtbox.y - tEndY) then
-				self.y = self.y - 1
-			elseif math.abs(boxEndY - target.y) > math.abs(self.hurtbox.y - tEndY) then
-				self.y = self.y + 1
-			end
+	end
+	if boxEndY >= target.y and self.hurtbox.y <= tEndY then
+		if math.abs(boxEndY - target.y) < math.abs(self.hurtbox.y - tEndY) + 4 then -- "+ 4 optimal for player"
+			self.y = self.y - (self.walkSpeed * dt)
+		elseif math.abs(boxEndY - target.y) > math.abs(self.hurtbox.y - tEndY) + 15 then -- "+ 15 optimal for player"
+			self.y = self.y + (self.walkSpeed * dt)
 		end
-	--end
+	end
 end
 
 -- AS5.X - Damage function adds knockback
@@ -233,8 +238,8 @@ function Entity:update(dt)
 	end
 end
 
-function Entity:processAI(params, dt)
-	self.stateMachine:processAI(params, dt)
+function Entity:processAI(dt)
+	self.stateMachine:processAI(dt)
 end
 
 function Entity:render(adjacentOffsetX, adjacentOffsetY)
@@ -242,7 +247,11 @@ function Entity:render(adjacentOffsetX, adjacentOffsetY)
 		love.graphics.draw(self.psystem, self.x + self.width/2, self.y + self.height/2)
 	else
 		if gRenderHitboxes then
-			self.hurtbox:render(0, 255, 0)
+			if self.flier == true then
+				self.hurtbox:render(0, 0, 255)
+			else
+				self.hurtbox:render(0, 255, 0)
+			end
 		end
 
 		if self.damageFlash and not self.invulnerable then

@@ -45,9 +45,9 @@ function PlayState:enter(params)
 end
 
 function PlayState:update(dt)
-	if love.keyboard.wasPressed('escape') then
-		love.event.quit()
-	end
+	-- if love.keyboard.wasPressed('escape') then
+	-- 	love.event.quit()
+	-- end
 
 	self.dungeon:update(dt)
 end

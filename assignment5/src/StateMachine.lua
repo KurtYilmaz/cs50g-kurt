@@ -30,6 +30,6 @@ end
 --[[
 	Used for states that can be controlled by the AI to influence update logic.
 ]]
-function StateMachine:processAI(params, dt)
-	self.current:processAI(params, dt)
+function StateMachine:processAI(dt)
+	self.current:processAI(dt)
 end
