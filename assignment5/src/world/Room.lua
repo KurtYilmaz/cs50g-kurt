@@ -8,7 +8,7 @@
 
 Room = Class{}
 
-function Room:init(player)
+function Room:init(player, x, y)
 
 	self.width = MAP_WIDTH
 	self.height = MAP_HEIGHT
@@ -22,8 +22,8 @@ function Room:init(player)
 		self.occupiedTiles[i] = {}
 	end
 	-- Giving player room at the start
-	self.playerStartX = math.floor((player.x - MAP_RENDER_OFFSET_X) / TILE_SIZE)
-	self.playerStartY = math.floor((player.y - MAP_RENDER_OFFSET_Y) / TILE_SIZE)
+	self.playerStartX = math.floor((x - MAP_RENDER_OFFSET_X) / TILE_SIZE)
+	self.playerStartY = math.floor((y - MAP_RENDER_OFFSET_Y) / TILE_SIZE)
 	for i=0, 2 do
 		self:fillTile(self.playerStartX, self.playerStartY + i)
 		self:fillTile(self.playerStartX + 1, self.playerStartY + i)
@@ -94,11 +94,11 @@ function Room:generateEntities()
 		})
 
 		self.entities[i].stateMachine = StateMachine {
-			['walk'] = function() return EntityWalkState(self.entities[i], self) end,
-			['idle'] = function() return EntityIdleState(self.entities[i], self) end
+			['walk'] = function() return EntityWalkState(self.entities[i]) end,
+			['idle'] = function() return EntityIdleState(self.entities[i]) end
 		}
 
-		self.entities[i]:changeState('walk')
+		self.entities[i]:changeState('idle')
 	end
 end
 
@@ -266,9 +266,26 @@ function Room:render()
 		end
 	end
 
-	love.graphics.rectangle('fill', self.playerStartX * TILE_SIZE + MAP_RENDER_OFFSET_X,
-							self.playerStartY * TILE_SIZE + MAP_RENDER_OFFSET_Y,
-							TILE_SIZE * 2, TILE_SIZE * 3)
+	-- AS5.X - Debug display
+	if gShowDebug then
+		-- Showing occupiedTiles
+		love.graphics.setColor(255, 0, 255, 200)
+		for i=1, MAP_HEIGHT - 2 do
+			for j=1, MAP_WIDTH - 2 do
+				if self.occupiedTiles[i][j] == true then
+					love.graphics.rectangle('fill', MAP_RENDER_OFFSET_X + j * TILE_SIZE, MAP_RENDER_OFFSET_Y + i * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+				end
+			end
+		end
+		love.graphics.setColor(255, 255, 255, 255)
+
+		-- Showing player start location
+		love.graphics.rectangle('fill', self.playerStartX * TILE_SIZE + MAP_RENDER_OFFSET_X,
+								self.playerStartY * TILE_SIZE + MAP_RENDER_OFFSET_Y,
+								TILE_SIZE * 2, TILE_SIZE * 3)
+		love.graphics.setFont(gFonts['medium'])
+		love.graphics.printf('x: ' .. tostring(self.playerStartX) .. '  y: ' .. tostring(self.playerStartY), 0, 0, VIRTUAL_WIDTH, 'right')
+	end
 
 	-- render doorways; stencils are placed where the arches are after so the player can
 	-- move through them convincingly
@@ -311,8 +328,6 @@ function Room:render()
 
 	love.graphics.setStencilTest()
 
-	-- love.graphics.printf(self.player.health, 0, 0, VIRTUAL_WIDTH, 'right')
-	-- love.graphics.printf(#self.objects, 0, 60, VIRTUAL_WIDTH, 'right')
 
 	if gShowGrid then
 		love.graphics.setColor(0, 0, 255, 128)

@@ -35,7 +35,4 @@ function Player:render()
 		self.hurtbox:render(0, 0, 255)
 	end
 	Entity.render(self)
-	-- love.graphics.setColor(255, 0, 255, 255)
-	-- love.graphics.rectangle('line', self.x, self.y, self.width, self.height)
-	-- love.graphics.setColor(255, 255, 255, 255)
 end

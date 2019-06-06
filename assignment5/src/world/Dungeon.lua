@@ -14,7 +14,7 @@ function Dungeon:init(player, dungeon)
 	self.rooms = {}
 
 	-- current room we're operating in
-	self.currentRoom = Room(self.player)
+	self.currentRoom = Room(self.player, PLAYER_START_X, PLAYER_START_Y)
 
 	-- room we're moving camera to during a shift; becomes active room afterwards
 	self.nextRoom = nil
@@ -48,27 +48,32 @@ end
 ]]
 function Dungeon:beginShifting(shiftX, shiftY)
 	self.shifting = true
-	self.nextRoom = Room(self.player)
+
+	-- tween the player position so they move through the doorway
+	local playerX, playerY = self.player.x, self.player.y
+	local destinationX, destinationY = self.player.x, self.player.y
+
+	if shiftX > 0 then
+		playerX = VIRTUAL_WIDTH + (MAP_RENDER_OFFSET_X + TILE_SIZE)
+		destinationX = MAP_RENDER_OFFSET_X + TILE_SIZE
+	elseif shiftX < 0 then
+		playerX = -VIRTUAL_WIDTH + (MAP_RENDER_OFFSET_X + (MAP_WIDTH * TILE_SIZE) - TILE_SIZE - self.player.width)
+		destinationX = MAP_RENDER_OFFSET_X + (MAP_WIDTH * TILE_SIZE) - TILE_SIZE - self.player.width - 1
+	elseif shiftY > 0 then
+		playerY = VIRTUAL_HEIGHT + (MAP_RENDER_OFFSET_Y + self.player.height / 2)
+		destinationY = MAP_RENDER_OFFSET_Y + self.player.height / 2
+	else
+		playerY = -VIRTUAL_HEIGHT + MAP_RENDER_OFFSET_Y + (MAP_HEIGHT * TILE_SIZE) - TILE_SIZE - self.player.height
+		destinationY = MAP_RENDER_OFFSET_Y + (MAP_HEIGHT * TILE_SIZE) - TILE_SIZE - self.player.height
+	end
+
+	self.nextRoom = Room(self.player, destinationX, destinationY)
+	self.nextRoom.adjacentOffsetX = shiftX
+	self.nextRoom.adjacentOffsetY = shiftY
 
 	-- start all doors in next room as open until we get in
 	for k, doorway in pairs(self.nextRoom.doorways) do
 		doorway.open = true
-	end
-
-	self.nextRoom.adjacentOffsetX = shiftX
-	self.nextRoom.adjacentOffsetY = shiftY
-
-	-- tween the player position so they move through the doorway
-	local playerX, playerY = self.player.x, self.player.y
-
-	if shiftX > 0 then
-		playerX = VIRTUAL_WIDTH + (MAP_RENDER_OFFSET_X + TILE_SIZE)
-	elseif shiftX < 0 then
-		playerX = -VIRTUAL_WIDTH + (MAP_RENDER_OFFSET_X + (MAP_WIDTH * TILE_SIZE) - TILE_SIZE - self.player.width)
-	elseif shiftY > 0 then
-		playerY = VIRTUAL_HEIGHT + (MAP_RENDER_OFFSET_Y + self.player.height / 2)
-	else
-		playerY = -VIRTUAL_HEIGHT + MAP_RENDER_OFFSET_Y + (MAP_HEIGHT * TILE_SIZE) - TILE_SIZE - self.player.height
 	end
 
 	-- tween the camera in whichever direction the new room is in, as well as the player to be
@@ -81,16 +86,16 @@ function Dungeon:beginShifting(shiftX, shiftY)
 
 		-- reset player to the correct location in the room
 		if shiftX < 0 then
-			self.player.x = MAP_RENDER_OFFSET_X + (MAP_WIDTH * TILE_SIZE) - TILE_SIZE - self.player.width
+			self.player.x = destinationX
 			self.player.direction = 'left'
 		elseif shiftX > 0 then
-			self.player.x = MAP_RENDER_OFFSET_X + TILE_SIZE
+			self.player.x = destinationX
 			self.player.direction = 'right'
 		elseif shiftY < 0 then
-			self.player.y = MAP_RENDER_OFFSET_Y + (MAP_HEIGHT * TILE_SIZE) - TILE_SIZE - self.player.height
+			self.player.y = destinationY
 			self.player.direction = 'up'
 		else
-			self.player.y = MAP_RENDER_OFFSET_Y + self.player.height / 2
+			self.player.y = destinationY
 			self.player.direction = 'down'
 		end
 

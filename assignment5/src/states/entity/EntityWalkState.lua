@@ -80,23 +80,6 @@ end
 
 function EntityWalkState:processAI(dt)
 	local directions
-	-- if self.bumped then
-	-- 	-- AS5.2 - forcing to walk a different direction than before
-	-- 	-- Avoids buggy behavior
-	-- 	-- if self.entity.direction == 'up' then
-	-- 	-- 	directions = {'left', 'right', 'down'}
-	-- 	-- elseif self.entity.direction == 'down' then
-	-- 	-- 	directions = {'left', 'right', 'up'}
-	-- 	-- elseif self.entity.direction == 'right' then
-	-- 	-- 	directions = {'left', 'up', 'down'}
-	-- 	-- else
-	-- 	-- 	directions = {'right', 'up', 'down'}
-	-- 	-- end
-	-- 	-- self.moveDuration = math.random(5)
-	-- 	-- self.entity.direction = directions[math.random(#directions)]
-	-- 	-- self.entity:changeAnimation('walk-' .. tostring(self.entity.direction))
-	-- 	-- self.entity:changeState('idle')
-	-- 	self.bumped = false
 	if self.moveDuration == 0 or self.bumped then
 		directions = {'left', 'right', 'up', 'down'}
 		-- set an initial move duration and direction
