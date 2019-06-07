@@ -79,6 +79,12 @@ function Entity:init(def, dungeon)
 	-- AS5.1 - onDeath function for generating hearts
 	self.onDeath = def.onDeath
 
+	-- AS5.2 - Moving this to entity to optimize for object collisions
+	self.bumped = false
+	self.liftOffsetX = def.liftOffsetX
+	self.liftOffsetY = def.liftOffsetY
+	self.inLiftRange = false
+	self.item = nil
 end
 
 function Entity:createAnimations(animations)
@@ -118,10 +124,27 @@ function Entity:unCollide(target, dt)
 		end
 	end
 	if boxEndY >= target.y and self.hurtbox.y <= tEndY then
-		if math.abs(boxEndY - target.y) < math.abs(self.hurtbox.y - tEndY) + 4 then -- "+ 4 optimal for player"
+		if math.abs(boxEndY - target.y) < math.abs(self.hurtbox.y - tEndY) + 4 then -- "+ 4" optimal for player
 			self.y = self.y - (self.walkSpeed * dt)
-		elseif math.abs(boxEndY - target.y) > math.abs(self.hurtbox.y - tEndY) + 15 then -- "+ 15 optimal for player"
+		elseif math.abs(boxEndY - target.y) > math.abs(self.hurtbox.y - tEndY) + 15 then -- "+ 15" optimal for player
 			self.y = self.y + (self.walkSpeed * dt)
+		end
+	end
+end
+
+-- AS5.2 - Checks object collisions here (usually called in WalkState)
+function Entity:checkObjectCollisions(dt)
+	if self.entity.flier == false then
+		for k, object in pairs(self.entity.room.objects) do
+			if object.solid then
+				if self:canLift(object) then
+					self.inLiftRange = true
+				end
+				if self:collides(object) then
+					self.bumped = true
+					self:unCollide(object, dt)
+				end
+			end
 		end
 	end
 end
@@ -236,6 +259,10 @@ function Entity:update(dt)
 	else
 		self.psystem:update(dt)
 	end
+end
+
+function Entity:checkObjectCollisions()
+
 end
 
 function Entity:processAI(dt)

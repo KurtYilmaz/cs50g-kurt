@@ -33,7 +33,7 @@ require 'src/states/entity/player/PlayerWalkState'
 -- AS5.X - Player can't move while in damage state
 require 'src/states/entity/player/PlayerDamageState'
 -- AS5.2 - Lifting and throwing
--- require 'src/states/entity/player/PlayerLiftState'
+require 'src/states/entity/player/PlayerLiftState'
 -- require 'src/states/entity/player/PlayerThrowState'
 
 require 'src/states/game/GameOverState'
