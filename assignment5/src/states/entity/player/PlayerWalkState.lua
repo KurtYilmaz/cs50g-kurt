@@ -58,7 +58,6 @@ function PlayerWalkState:update(dt)
 
 					-- shift entity to center of door to avoid phasing through wall
 					self.entity.y = doorway.y + 4
-					self.entity:goInvulnerable(1.5)
 					Event.dispatch('shift-left')
 				end
 			end
@@ -75,7 +74,6 @@ function PlayerWalkState:update(dt)
 
 					-- shift entity to center of door to avoid phasing through wall
 					self.entity.y = doorway.y + 4
-					self.entity:goInvulnerable(1.5)
 					Event.dispatch('shift-right')
 				end
 			end
@@ -92,7 +90,6 @@ function PlayerWalkState:update(dt)
 
 					-- shift entity to center of door to avoid phasing through wall
 					self.entity.x = doorway.x + 8
-					self.entity:goInvulnerable(1.5)
 					Event.dispatch('shift-up')
 				end
 			end
@@ -109,7 +106,6 @@ function PlayerWalkState:update(dt)
 
 					-- shift entity to center of door to avoid phasing through wall
 					self.entity.x = doorway.x + 8
-					self.entity:goInvulnerable(1.5)
 					Event.dispatch('shift-down')
 				end
 			end
