@@ -25,16 +25,12 @@ end
 function PlayerWalkState:update(dt)
 	if love.keyboard.isDown(PLAYER_LEFT) then
 		self.entity.direction = 'left'
-		self.entity:changeAnimation('walk-left')
 	elseif love.keyboard.isDown(PLAYER_RIGHT) then
 		self.entity.direction = 'right'
-		self.entity:changeAnimation('walk-right')
 	elseif love.keyboard.isDown(PLAYER_UP) then
 		self.entity.direction = 'up'
-		self.entity:changeAnimation('walk-up')
 	elseif love.keyboard.isDown(PLAYER_DOWN) then
 		self.entity.direction = 'down'
-		self.entity:changeAnimation('walk-down')
 	else
 		self.entity:changeState('idle')
 	end
@@ -113,5 +109,9 @@ function PlayerWalkState:update(dt)
 end
 
 function PlayerWalkState:action()
-	self.entity:changeState('swing-sword')
+	if self.entity.item == nil then
+		self.entity:changeState('swing-sword')
+	else
+		self.entity:changeState('throw')
+	end
 end

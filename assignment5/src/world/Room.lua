@@ -204,7 +204,7 @@ function Room:update(dt)
 			gSounds['hit-player']:play()
 			self.player:changeState('damage')
 			self.player:damage(1)
-			self.player:goInvulnerable(1.5)
+			self.player:goInvulnerable(1)
 
 			if self.player.health == 0 then
 				gStateMachine:change('game-over')

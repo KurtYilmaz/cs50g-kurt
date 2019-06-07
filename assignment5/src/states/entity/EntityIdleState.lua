@@ -11,7 +11,11 @@ EntityIdleState = Class{__includes = BaseState}
 function EntityIdleState:init(entity)
 	self.entity = entity
 
-	self.entity:changeAnimation('idle-' .. self.entity.direction)
+	if self.entity.item == nil then
+		self.entity:changeAnimation('idle-' .. self.entity.direction)
+	else
+		self.entity:changeAnimation('hold-' .. self.entity.direction)
+	end
 
 	-- used for AI waiting
 	self.waitDuration = 0
@@ -31,6 +35,11 @@ function EntityIdleState:processAI(dt)
 end
 
 function EntityIdleState:render()
+	if self.entity.item == nil then
+		self.entity:changeAnimation('idle-' .. self.entity.direction)
+	else
+		self.entity:changeAnimation('hold-' .. self.entity.direction)
+	end
 	local anim = self.entity.currentAnimation
 	love.graphics.draw(gTextures[anim.texture], gFrames[anim.texture][anim:getCurrentFrame()],
 		math.floor(self.entity.x - self.entity.offsetX), math.floor(self.entity.y - self.entity.offsetY))

@@ -10,7 +10,6 @@ Player = Class{__includes = Entity}
 
 function Player:init(def)
 	Entity.init(self, def)
-	self:goInvulnerable(1.5)
 end
 
 function Player:update(dt)

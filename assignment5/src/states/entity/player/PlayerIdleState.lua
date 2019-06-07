@@ -27,5 +27,10 @@ function PlayerIdleState:update(dt)
 end
 
 function PlayerIdleState:action()
-	self.entity:changeState('swing-sword')
+	if self.entity.item == nil then
+		self.entity:changeState('lift')
+		--self.entity:changeState('swing-sword')
+	else
+		self.entity:changeState('throw')
+	end
 end

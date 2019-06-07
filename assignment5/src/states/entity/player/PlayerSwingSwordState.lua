@@ -88,6 +88,10 @@ function PlayerSwingSwordState:update(dt)
 	end
 end
 
+function PlayerSwingSwordState:action()
+	self.entity:changeState('swing-sword')
+end
+
 function PlayerSwingSwordState:render()
 	if gRenderHitboxes then
 		self.swordHitbox:render(255, 0, 0)
@@ -95,8 +99,4 @@ function PlayerSwingSwordState:render()
 	local anim = self.entity.currentAnimation
 	love.graphics.draw(gTextures[anim.texture], gFrames[anim.texture][anim:getCurrentFrame()],
 		math.floor(self.entity.x - self.entity.offsetX), math.floor(self.entity.y - self.entity.offsetY))
-end
-
-function PlayerSwingSwordState:action()
-	self.entity:changeState('swing-sword')
 end

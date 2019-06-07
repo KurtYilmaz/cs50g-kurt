@@ -34,7 +34,7 @@ require 'src/states/entity/player/PlayerWalkState'
 require 'src/states/entity/player/PlayerDamageState'
 -- AS5.2 - Lifting and throwing
 require 'src/states/entity/player/PlayerLiftState'
--- require 'src/states/entity/player/PlayerThrowState'
+require 'src/states/entity/player/PlayerThrowState'
 
 require 'src/states/game/GameOverState'
 require 'src/states/game/PlayState'

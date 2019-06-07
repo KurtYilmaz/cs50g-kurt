@@ -10,7 +10,12 @@ EntityWalkState = Class{__includes = BaseState}
 
 function EntityWalkState:init(entity)
 	self.entity = entity
-	self.entity:changeAnimation('walk-down')
+
+	if self.entity.item == nil then
+		self.entity:changeAnimation('walk-' .. self.entity.direction)
+	else
+		self.entity:changeAnimation('carry-' .. self.entity.direction)
+	end
 
 	-- used for AI control
 	self.moveDuration = 0
@@ -21,7 +26,6 @@ function EntityWalkState:init(entity)
 end
 
 function EntityWalkState:update(dt)
-
 	if self.entity.health <= 0 then
 		self.entity:changeState('idle')
 		return
@@ -106,6 +110,11 @@ function EntityWalkState:processAI(dt)
 end
 
 function EntityWalkState:render()
+	if self.entity.item == nil then
+		self.entity:changeAnimation('walk-' .. self.entity.direction)
+	else
+		self.entity:changeAnimation('carry-' .. self.entity.direction)
+	end
 	local anim = self.entity.currentAnimation
 	love.graphics.draw(gTextures[anim.texture], gFrames[anim.texture][anim:getCurrentFrame()],
 		math.floor(self.entity.x - self.entity.offsetX), math.floor(self.entity.y - self.entity.offsetY))

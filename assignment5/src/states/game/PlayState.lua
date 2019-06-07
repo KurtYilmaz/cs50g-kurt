@@ -35,7 +35,11 @@ function PlayState:init()
 		['walk'] = function() return PlayerWalkState(self.player, self.dungeon) end,
 		['idle'] = function() return PlayerIdleState(self.player) end,
 		['swing-sword'] = function() return PlayerSwingSwordState(self.player, self.dungeon) end,
-		['damage'] = function() return PlayerDamageState(self.player) end
+		['damage'] = function() return PlayerDamageState(self.player) end,
+		-- AS5.2 - Adding lift state
+		['lift'] = function() return PlayerLiftState(self.player) end,
+		-- AS5.3 - Adding throw state
+		['throw'] = function() return PlayerThrowState(self.player) end
 	}
 	self.player:changeState('idle')
 end

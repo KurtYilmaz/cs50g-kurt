@@ -58,6 +58,22 @@ ENTITY_DEFS = {
 				frames = {9},
 				texture = 'character-walk'
 			},
+			['hold-left'] = {
+				frames = {12},
+				texture = 'character-lift'
+			},
+			['hold-right'] = {
+				frames = {6},
+				texture = 'character-lift'
+			},
+			['hold-down'] = {
+				frames = {3},
+				texture = 'character-lift'
+			},
+			['hold-up'] = {
+				frames = {9},
+				texture = 'character-lift'
+			},
 			['sword-left'] = {
 				frames = {13, 14, 15, 16},
 				interval = 0.05,
@@ -85,25 +101,25 @@ ENTITY_DEFS = {
 			-- AS5.2 - Lift state animations
 			['lift-left'] = {
 				frames = {10, 11, 12},
-				interval = 0.3,
+				interval = PLAYER_LIFT_SPEED,
 				looping = false,
 				texture = 'character-lift'
 			},
 			['lift-right'] = {
 				frames = {4, 5, 6},
-				interval = 0.3,
+				interval = PLAYER_LIFT_SPEED,
 				looping = false,
 				texture = 'character-lift'
 			},
 			['lift-down'] = {
 				frames = {1, 2, 3},
-				interval = 0.3,
+				interval = PLAYER_LIFT_SPEED,
 				looping = false,
 				texture = 'character-lift'
 			},
 			['lift-up'] = {
 				frames = {7, 8, 9},
-				interval = 0.3,
+				interval = PLAYER_LIFT_SPEED,
 				looping = false,
 				texture = 'character-lift'
 			},
@@ -131,25 +147,25 @@ ENTITY_DEFS = {
 			-- AS5.3 - Throw state animations
 			['throw-left'] = {
 				frames = {12, 11, 10},
-				interval = 0.3,
+				interval = PLAYER_THROW_SPEED,
 				looping = false,
 				texture = 'character-lift'
 			},
 			['throw-right'] = {
 				frames = {6, 5, 4},
-				interval = 0.3,
+				interval = PLAYER_THROW_SPEED,
 				looping = false,
 				texture = 'character-lift'
 			},
 			['throw-down'] = {
 				frames = {3, 2, 1},
-				interval = 0.3,
+				interval = PLAYER_THROW_SPEED,
 				looping = false,
 				texture = 'character-lift'
 			},
 			['throw-up'] = {
 				frames = {9, 8, 7},
-				interval = 0.3,
+				interval = PLAYER_THROW_SPEED,
 				looping = false,
 				texture = 'character-lift'
 			}
