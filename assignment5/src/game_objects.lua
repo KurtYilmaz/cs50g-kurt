@@ -25,6 +25,7 @@ GAME_OBJECT_DEFS = {
 		}
 	},
 	-- AS5.2 - support for pots
+	-- Main color = 79, 144, 149
 	['pot'] = {
 		type = 'pot',
 		texture = 'tiles',

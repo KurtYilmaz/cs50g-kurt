@@ -44,7 +44,10 @@ function EntityIdleState:render()
 	love.graphics.draw(gTextures[anim.texture], gFrames[anim.texture][anim:getCurrentFrame()],
 		math.floor(self.entity.x - self.entity.offsetX), math.floor(self.entity.y - self.entity.offsetY))
 
-	-- love.graphics.setColor(255, 0, 255, 255)
-	-- love.graphics.rectangle('line', self.entity.x, self.entity.y, self.entity.width, self.entity.height)
-	-- love.graphics.setColor(255, 255, 255, 255)
+	-- AS5.2 - rendering lifted item
+	if self.entity.item ~= nil then
+		self.entity.item.x = self.entity.x
+		self.entity.item.y = self.entity.y - self.entity.item.height/2
+		self.entity.item:render(-0.5, 0.5)
+	end
 end

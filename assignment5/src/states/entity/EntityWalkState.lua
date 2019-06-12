@@ -34,6 +34,10 @@ function EntityWalkState:update(dt)
 	-- assume we didn't hit a wall
 	self.entity.bumped = false
 
+	-- Extra collision checking for bottom edge to clipping when walking into pots
+	local bottomEdge = VIRTUAL_HEIGHT - (VIRTUAL_HEIGHT - MAP_HEIGHT * TILE_SIZE)
+		+ MAP_RENDER_OFFSET_Y - TILE_SIZE
+
 	if self.entity.direction == 'left' then
 		self.entity.x = self.entity.x - self.entity.walkSpeed * dt
 
@@ -41,6 +45,11 @@ function EntityWalkState:update(dt)
 			self.entity.x = MAP_RENDER_OFFSET_X + TILE_SIZE
 			self.entity.bumped = true
 		end
+		if self.entity.y + self.entity.height > bottomEdge then
+			self.entity.y = bottomEdge - self.entity.height
+			self.entity.bumped = true
+		end
+
 	elseif self.entity.direction == 'right' then
 		self.entity.x = self.entity.x + self.entity.walkSpeed * dt
 
@@ -48,6 +57,11 @@ function EntityWalkState:update(dt)
 			self.entity.x = VIRTUAL_WIDTH - TILE_SIZE * 2 - self.entity.width
 			self.entity.bumped = true
 		end
+		if self.entity.y + self.entity.height > bottomEdge then
+			self.entity.y = bottomEdge - self.entity.height
+			self.entity.bumped = true
+		end
+
 	elseif self.entity.direction == 'up' then
 		self.entity.y = self.entity.y - self.entity.walkSpeed * dt
 
@@ -55,11 +69,9 @@ function EntityWalkState:update(dt)
 			self.entity.y = MAP_RENDER_OFFSET_Y + TILE_SIZE - self.entity.height / 2
 			self.entity.bumped = true
 		end
+
 	elseif self.entity.direction == 'down' then
 		self.entity.y = self.entity.y + self.entity.walkSpeed * dt
-
-		local bottomEdge = VIRTUAL_HEIGHT - (VIRTUAL_HEIGHT - MAP_HEIGHT * TILE_SIZE)
-			+ MAP_RENDER_OFFSET_Y - TILE_SIZE
 
 		if self.entity.y + self.entity.height >= bottomEdge then
 			self.entity.y = bottomEdge - self.entity.height
@@ -109,8 +121,10 @@ function EntityWalkState:render()
 	local anim = self.entity.currentAnimation
 	love.graphics.draw(gTextures[anim.texture], gFrames[anim.texture][anim:getCurrentFrame()],
 		math.floor(self.entity.x - self.entity.offsetX), math.floor(self.entity.y - self.entity.offsetY))
-
-	-- love.graphics.setColor(255, 0, 255, 255)
-	-- love.graphics.rectangle('line', self.entity.x, self.entity.y, self.entity.width, self.entity.height)
-	-- love.graphics.setColor(255, 255, 255, 255)
+	-- AS5.2 - rendering lifted item
+	if self.entity.item ~= nil then
+		self.entity.item.x = self.entity.x
+		self.entity.item.y = self.entity.y - self.entity.item.height/2
+		self.entity.item:render(-0.5, 0.5)
+	end
 end
