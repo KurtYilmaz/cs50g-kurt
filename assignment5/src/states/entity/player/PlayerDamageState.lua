@@ -24,6 +24,6 @@ function PlayerDamageState:update(dt)
 	end
 end
 
-function PlayerDamageState:action()
+function PlayerDamageState:action(dt)
 	-- Empty action function
 end

@@ -22,7 +22,7 @@ function PlayerThrowState:update(dt)
 	self.timer = self.timer - dt
 end
 
-function PlayerThrowState:action()
+function PlayerThrowState:action(dt)
 	-- Empty action function
 end
 

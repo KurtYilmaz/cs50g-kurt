@@ -16,7 +16,7 @@ function Player:update(dt)
 	Entity.update(self, dt)
 	-- AS5.X - Each player state has an action function (swing sword, lift, etc)
 	if love.keyboard.wasPressed(PLAYER_ACTION) then
-		self.stateMachine.current:action()
+		self.stateMachine.current:action(dt)
 	end
 end
 

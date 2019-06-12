@@ -16,13 +16,12 @@ end
 function PlayerLiftState:update(dt)
 	if self.timer < 0 then
 		-- TEMPORARY, WILL NEED ITEM PICKED UP LATER (JUST NEED HERE TO TEST ANIMATION)
-		self.entity.item = 1
 		self.entity:changeState('idle')
 	end
 	self.timer = self.timer - dt
 end
 
-function PlayerLiftState:action()
+function PlayerLiftState:action(dt)
 	-- Empty action function
 end
 

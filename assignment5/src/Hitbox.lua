@@ -32,3 +32,8 @@ function Hitbox:render(red, green, blue)
 	love.graphics.setColor(255, 255, 255, 255)
 
 end
+-- AS5.2 - allows disjointed (sword and lift) hitboxes to collide with objects
+function Hitbox:collides(target)
+	return not (self.x + self.width < target.x or self.x > target.x + target.width or
+				self.y + self.height < target.y or self.y > target.y + target.height)
+end

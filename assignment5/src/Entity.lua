@@ -8,7 +8,7 @@
 
 Entity = Class{}
 
-function Entity:init(def, dungeon)
+function Entity:init(def)
 
 	-- in top-down games, there are four directions instead of two
 	self.direction = 'down'
@@ -79,12 +79,13 @@ function Entity:init(def, dungeon)
 	-- AS5.1 - onDeath function for generating hearts
 	self.onDeath = def.onDeath
 
-	-- AS5.2 - Moving this to entity to optimize for object collisions
+	-- AS5.2 - Entity variables for lift/throw
 	self.bumped = false
 	self.liftOffsetX = def.liftOffsetX
 	self.liftOffsetY = def.liftOffsetY
 	self.inLiftRange = false
 	self.item = nil
+	self.liftHitboxDisplayTimer = 0
 end
 
 function Entity:createAnimations(animations)
@@ -105,8 +106,8 @@ end
 	AABB with some slight shrinkage of the box on the top side for perspective.
 ]]
 function Entity:collides(target)
-	return not (self.hurtbox.x + self.width < target.x or self.hurtbox.x > target.x + target.width or
-				self.hurtbox.y + self.height < target.y or self.hurtbox.y > target.y + target.height)
+	return not (self.hurtbox.x + self.hurtbox.width < target.x or self.hurtbox.x > target.x + target.width or
+				self.hurtbox.y + self.hurtbox.height < target.y or self.hurtbox.y > target.y + target.height)
 end
 
 -- AS5.2 - preventing buggy interaction with pots, uncollides entity with target
@@ -128,23 +129,6 @@ function Entity:unCollide(target, dt)
 			self.y = self.y - (self.walkSpeed * dt)
 		elseif math.abs(boxEndY - target.y) > math.abs(self.hurtbox.y - tEndY) + 15 then -- "+ 15" optimal for player
 			self.y = self.y + (self.walkSpeed * dt)
-		end
-	end
-end
-
--- AS5.2 - Checks object collisions here (usually called in WalkState)
-function Entity:checkObjectCollisions(dt)
-	if self.entity.flier == false then
-		for k, object in pairs(self.entity.room.objects) do
-			if object.solid then
-				if self:canLift(object) then
-					self.inLiftRange = true
-				end
-				if self:collides(object) then
-					self.bumped = true
-					self:unCollide(object, dt)
-				end
-			end
 		end
 	end
 end
@@ -259,10 +243,71 @@ function Entity:update(dt)
 	else
 		self.psystem:update(dt)
 	end
+
+	self.liftHitboxDisplayTimer = self.liftHitboxDisplayTimer - dt
 end
 
-function Entity:checkObjectCollisions()
+-- AS5.2 - object collision checking
+function Entity:checkObjectCollisions(dt)
+	if not self.flier then
+		for k, object in pairs(self.room.objects) do
+			if object.solid then
+				if self:collides(object) then
+					self.bumped = true
+					self:unCollide(object, dt)
+				end
+			end
+		end
+	end
+end
 
+-- AS5.2 - attempt lift
+function Entity:attemptLift(dt)
+	-- Creating a special hitbox for the lift
+	local padX, padY, hitboxWidth, hitboxHeight
+	if self.direction == 'left' then
+		hitboxWidth = 5
+		hitboxHeight = 5
+		padX = -hitboxWidth + self.hurtbox.padX
+		padY = self.hurtbox.padY + self.hurtbox.height - 5
+	elseif self.direction == 'right' then
+		hitboxWidth = 5
+		hitboxHeight = 5
+		padX = self.hurtbox.width + self.hurtbox.padX
+		padY = self.hurtbox.padY + self.hurtbox.height - 5
+	elseif self.direction == 'up' then
+		hitboxWidth = 5
+		hitboxHeight = 5
+		padX = self.hurtbox.padX + self.hurtbox.width / 4 + 1
+		padY = self.hurtbox.padY - 5
+	else
+		hitboxWidth = 5
+		hitboxHeight = 5
+		padX = self.hurtbox.padX + self.hurtbox.width / 4 + 1
+		padY = self.hurtbox.padY + self.hurtbox.height
+	end
+
+	self.liftHitbox = Hitbox {
+		padX = padX,
+		padY = padY,
+		height = hitboxHeight,
+		width = hitboxWidth
+	}
+	self.liftHitbox:move(self.x, self.y)
+
+	for k, object in pairs(self.room.objects) do
+		if self.liftHitbox:collides(object) then
+			self.item = object
+			table.remove(self.room.objects, k)
+			break
+		end
+		if self.item then
+			break
+		end
+	end
+
+	-- Timer to display the lift hitbox
+	self.liftHitboxDisplayTimer = 1
 end
 
 function Entity:processAI(dt)
@@ -278,6 +323,9 @@ function Entity:render(adjacentOffsetX, adjacentOffsetY)
 				self.hurtbox:render(0, 0, 255)
 			else
 				self.hurtbox:render(0, 255, 0)
+			end
+			if self.liftHitboxDisplayTimer > 0 then
+				self.liftHitbox:render(255, 255, 0)
 			end
 		end
 

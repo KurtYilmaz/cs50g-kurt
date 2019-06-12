@@ -26,10 +26,18 @@ function PlayerIdleState:update(dt)
 	end
 end
 
-function PlayerIdleState:action()
+function PlayerIdleState:action(dt)
+	-- If no item, will attempt lift
 	if self.entity.item == nil then
-		self.entity:changeState('lift')
-		--self.entity:changeState('swing-sword')
+		self.entity:attemptLift(dt)
+		-- If no item after attempting lift, swing sword
+		if self.entity.item == nil then
+			self.entity:changeState('swing-sword')
+		-- If item after attempting lift, lift state
+		else
+			self.entity:changeState('lift')
+		end
+	-- If has item, will throw
 	else
 		self.entity:changeState('throw')
 	end

@@ -39,7 +39,7 @@ function PlayerWalkState:update(dt)
 	EntityWalkState.update(self, dt)
 
 	-- if we bumped something when checking collision, check any object collisions
-	if self.bumped then
+	if self.entity.bumped then
 		if self.entity.direction == 'left' then
 
 			-- temporarily adjust position
@@ -108,9 +108,18 @@ function PlayerWalkState:update(dt)
 	end
 end
 
-function PlayerWalkState:action()
+function PlayerWalkState:action(dt)
+	-- If no item, will attempt lift
 	if self.entity.item == nil then
-		self.entity:changeState('swing-sword')
+		self.entity:attemptLift(dt)
+		-- If no item after attempting lift, swing sword
+		if self.entity.item == nil then
+			self.entity:changeState('swing-sword')
+		-- If item after attempting lift, lift state
+		else
+			self.entity:changeState('lift')
+		end
+	-- If has item, will throw
 	else
 		self.entity:changeState('throw')
 	end

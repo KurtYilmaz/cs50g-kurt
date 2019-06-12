@@ -88,7 +88,7 @@ function PlayerSwingSwordState:update(dt)
 	end
 end
 
-function PlayerSwingSwordState:action()
+function PlayerSwingSwordState:action(dt)
 	self.entity:changeState('swing-sword')
 end
 
