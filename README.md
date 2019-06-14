@@ -4,7 +4,7 @@ Repo for CS50G assignments
 ## Course Link
 https://courses.edx.org/courses/course-v1:HarvardX+CS50G+Games/course/
 
-## Running Assignments 1-7 using LÖVE (Works on Windows, Mac, Linux)
+## Running Assignments 1-7 (LÖVE, Windows, Mac, Linux)
 1. [Download LÖVE, version 10.2 (I know it's outdated, the course uses libraries only compatible with 10.2)](https://bitbucket.org/rude/love/downloads/)
 2. Install LÖVE
 3. Zip an assignment folder
