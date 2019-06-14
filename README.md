@@ -13,29 +13,29 @@ https://courses.edx.org/courses/course-v1:HarvardX+CS50G+Games/course/
 
 ## Controls
 
-### Assignment 0
+### Assignment 0 - Pong
 
   > Left arrow key - move up
 
   > Right arrow key - move down 
 
-### Assignment 1
+### Assignment 1 - Flappy Bird
 
   > Space bar - fly up (slightly) &nbsp;
 
-### Assignment 2
+### Assignment 2 - Breakout
 
   > Left arrow key - move left
 
   > Right arrow key - move right &nbsp;
    
-### Assignment 3
+### Assignment 3 - Match 3
 
   > Move mouse - move cursor
 
-  > Left click - select &nbsp;
+  > Left click - select
  
-### Assignment 4
+### Assignment 4 - Super Mario Bros.
 
   > W - Move up
 
@@ -47,7 +47,7 @@ https://courses.edx.org/courses/course-v1:HarvardX+CS50G+Games/course/
    
   > Space bar - jump &nbsp;
  
-### Assignment 5
+### Assignment 5 - Legend of Zelda
 
    > W - Move up
 
@@ -58,3 +58,19 @@ https://courses.edx.org/courses/course-v1:HarvardX+CS50G+Games/course/
    > D - move right
    
    > Space bar - action button (lift pots or attack) &nbsp;
+   
+### Assignment 6 - Angry Birds (coming soon)
+
+  > Move mouse - move cursor
+
+  > Left click - select and drag
+
+### Assignment 7 - Pokemon (coming soon)
+
+### Assignment 8 - 3D Helicopter Game (coming soon)
+
+### Assignment 9 - Dreadhalls (coming soon)
+
+### Assignment 10 - Portal (coming soon)
+
+### Assignment 11 - Portal Problems (coming soon)
