@@ -40,6 +40,9 @@ function Room:init(player, x, y)
 	self.entities = {}
 	self:generateEntities()
 
+	-- AS5.3 - each room performs collision logic and tracks projectiles
+	self.projectiles = {}
+
 	-- doorways that lead to other dungeon rooms
 	self.doorways = {}
 	table.insert(self.doorways, Doorway('top', false, self))
@@ -87,7 +90,8 @@ function Room:generateEntities()
 			onDeath = function(entity)
 				if math.random(8) > 6 then
 					Timer.after(KNOCKBACK_SPEED + 0.8, function()
-						table.insert(self.objects, GameObject(GAME_OBJECT_DEFS['heart'], entity.x, entity.y))
+						table.insert(self.objects,
+							GameObject(GAME_OBJECT_DEFS['heart'], entity.x, entity.y))
 					end)
 				end
 			end
@@ -188,7 +192,8 @@ function Room:update(dt)
 		entity:update(dt)
 
 		-- collision between the player and entities in the room
-		if not entity.dead and self.player:collides(entity.hitbox) and not self.player.invulnerable then
+		if not entity.dead and self.player:collides(entity.hitbox)
+			and not self.player.invulnerable then
 			-- AS5.X - Logic for drection of player knockback if idle
 			if self.player.idle then
 				if entity.direction == 'right' then
@@ -208,6 +213,49 @@ function Room:update(dt)
 
 			if self.player.health == 0 then
 				gStateMachine:change('game-over')
+			end
+		end
+
+		-- AS5.3 - Dealing with projectile collision
+		--[[This IS O(n^2), but that's okay because there won't be more than one
+			projectile at a time in this build. If scaling up further, there are
+			still a limited number of entities in the room, so we won't get a crazy
+			huge loop.
+			]]
+		for p, projectile in pairs(self.projectiles) do
+			projectile:update(dt)
+			-- If projectile collides with enemy
+			-- Not checking player collision, because currently only player can fire
+			-- If enemy projectiles exist, we can add an owner into GameObject
+			if entity:collides(projectile) and not entity.dead and not projectile.exploded then
+				if projectile.fireDirection == 'left' then
+					entity.directionHit = 'right'
+				elseif projectile.fireDirection == 'right' then
+					entity.directionHit = 'left'
+				elseif projectile.fireDirection == 'up' then
+					entity.directionHit = 'down'
+				elseif projectile.fireDirection == 'down' then
+					entity.directionHit = 'up'
+				end
+				entity:damage(1)
+				gSounds['hit-enemy']:setVolume(0.6)
+				gSounds['hit-enemy']:play()
+				projectile:explode()
+
+			-- If projectile hits wall first
+		elseif 	projectile.x <= MAP_LEFT_EDGE - projectile.width or
+				projectile.x >= MAP_RIGHT_EDGE or
+				projectile.y <= MAP_TOP_EDGE - 2 - projectile.height or
+				projectile.y  >= MAP_BOTTOM_EDGE then
+						projectile:explode()
+			end
+
+			--[[ Giving 4 seconds for projectile to finish animation before
+				removal from table. Keeping it in the table makes game less
+				efficient
+			]]
+			if projectile.timeExploded > 10 then
+				table.remove(self.projectiles, p)
 			end
 		end
 	end
@@ -273,7 +321,9 @@ function Room:render()
 		for i=1, MAP_HEIGHT - 2 do
 			for j=1, MAP_WIDTH - 2 do
 				if self.occupiedTiles[i][j] == true then
-					love.graphics.rectangle('fill', MAP_RENDER_OFFSET_X + j * TILE_SIZE, MAP_RENDER_OFFSET_Y + i * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+					love.graphics.rectangle('fill', MAP_RENDER_OFFSET_X + j *
+					TILE_SIZE, MAP_RENDER_OFFSET_Y + i * TILE_SIZE, TILE_SIZE,
+					TILE_SIZE)
 				end
 			end
 		end
@@ -284,7 +334,11 @@ function Room:render()
 								self.playerStartY * TILE_SIZE + MAP_RENDER_OFFSET_Y,
 								TILE_SIZE * 2, TILE_SIZE * 3)
 		love.graphics.setFont(gFonts['medium'])
-		love.graphics.printf('x: ' .. tostring(self.playerStartX) .. '  y: ' .. tostring(self.playerStartY), 0, 0, VIRTUAL_WIDTH, 'right')
+		love.graphics.printf('x: ' .. tostring(self.playerStartX) .. '  y: ' ..
+							tostring(self.playerStartY), 0, 0, VIRTUAL_WIDTH, 'right')
+		-- Showing number of projectiles on screen
+		love.graphics.printf('projectiles: ' .. tostring(#self.projectiles),
+										0, 200, VIRTUAL_WIDTH, 'right')
 	end
 
 	-- render doorways; stencils are placed where the arches are after so the player can
@@ -297,6 +351,10 @@ function Room:render()
 		object:render(self.adjacentOffsetX, self.adjacentOffsetY)
 	end
 
+	for k, projectile in pairs(self.projectiles) do
+		projectile:render(self.adjacentOffsetX, self.adjacentOffsetY)
+	end
+
 	for k, entity in pairs(self.entities) do
 		entity:render(self.adjacentOffsetX, self.adjacentOffsetY)
 	end
@@ -304,21 +362,26 @@ function Room:render()
 	-- stencil out the door arches so it looks like the player is going through
 	love.graphics.stencil(function()
 		-- left
-		love.graphics.rectangle('fill', -TILE_SIZE - 6, MAP_RENDER_OFFSET_Y + (self.height / 2) * TILE_SIZE - TILE_SIZE,
-			TILE_SIZE * 2 + 6, TILE_SIZE * 2)
+		love.graphics.rectangle('fill', -TILE_SIZE - 6,
+				MAP_RENDER_OFFSET_Y + (self.height / 2) * TILE_SIZE - TILE_SIZE,
+				TILE_SIZE * 2 + 6, TILE_SIZE * 2)
 
 		-- right
-		love.graphics.rectangle('fill', MAP_RENDER_OFFSET_X + (self.width * TILE_SIZE) - 6,
-			MAP_RENDER_OFFSET_Y + (self.height / 2) * TILE_SIZE - TILE_SIZE, TILE_SIZE * 2 + 6, TILE_SIZE * 2)
+		love.graphics.rectangle('fill',
+				MAP_RENDER_OFFSET_X + (self.width * TILE_SIZE) - 6,
+				MAP_RENDER_OFFSET_Y + (self.height / 2) * TILE_SIZE - TILE_SIZE,
+				TILE_SIZE * 2 + 6, TILE_SIZE * 2)
 
 		-- top
-		love.graphics.rectangle('fill', MAP_RENDER_OFFSET_X + (self.width / 2) * TILE_SIZE - TILE_SIZE,
-			-TILE_SIZE - 6, TILE_SIZE * 2, TILE_SIZE * 2 + 12)
+		love.graphics.rectangle('fill',
+				MAP_RENDER_OFFSET_X + (self.width / 2) * TILE_SIZE - TILE_SIZE,
+				-TILE_SIZE - 6, TILE_SIZE * 2, TILE_SIZE * 2 + 12)
 
 		--bottom
-		love.graphics.rectangle('fill', MAP_RENDER_OFFSET_X + (self.width / 2) * TILE_SIZE - TILE_SIZE,
-			VIRTUAL_HEIGHT - TILE_SIZE - 6, TILE_SIZE * 2, TILE_SIZE * 2 + 12)
-	end, 'replace', 1)
+		love.graphics.rectangle('fill',
+				MAP_RENDER_OFFSET_X + (self.width / 2) * TILE_SIZE - TILE_SIZE,
+				VIRTUAL_HEIGHT - TILE_SIZE - 6, TILE_SIZE * 2, TILE_SIZE * 2 + 12)
+		end, 'replace', 1)
 
 	love.graphics.setStencilTest('less', 1)
 

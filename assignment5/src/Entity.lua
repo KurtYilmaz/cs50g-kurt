@@ -144,7 +144,7 @@ function Entity:damage(dmg)
 		end)
 		if self.directionHit == 'down' or (self.directionHit == 'none' and self.direction == 'down')  then
 			Timer.tween(KNOCKBACK_SPEED, {
-				[self] = {y = math.max(MAP_RENDER_OFFSET_Y + TILE_SIZE - self.height / 2, self.y - (2 * TILE_SIZE))}
+				[self] = {y = math.max(MAP_TOP_EDGE - self.height / 2, self.y - (2 * TILE_SIZE))}
 			}):finish(function()
 				if self.health <= 0 then
 					self:death()
@@ -152,9 +152,7 @@ function Entity:damage(dmg)
 			end)
 		elseif self.directionHit == 'up' or (self.directionHit == 'none' and self.direction == 'up') then
 			Timer.tween(KNOCKBACK_SPEED, {
-				[self] = {y =  math.min(VIRTUAL_HEIGHT -
-							(VIRTUAL_HEIGHT - MAP_HEIGHT * TILE_SIZE) +
-							MAP_RENDER_OFFSET_Y - TILE_SIZE - self.height, self.y + (2 * TILE_SIZE))}
+				[self] = {y =  math.min(MAP_BOTTOM_EDGE - self.height, self.y + (2 * TILE_SIZE))}
 			}):finish(function()
 				if self.health <= 0 then
 					self:death()
@@ -162,7 +160,7 @@ function Entity:damage(dmg)
 			end)
 		elseif self.directionHit == 'left' or (self.directionHit == 'none' and self.direction == 'left') then
 			Timer.tween(KNOCKBACK_SPEED, {
-				[self] = {x =  math.min(VIRTUAL_WIDTH - TILE_SIZE * 2 - self.width, self.x + (2 * TILE_SIZE))}
+				[self] = {x =  math.min(MAP_RIGHT_EDGE - self.width, self.x + (2 * TILE_SIZE))}
 			}):finish(function()
 				if self.health <= 0 then
 					self:death()
@@ -170,7 +168,7 @@ function Entity:damage(dmg)
 			end)
 		elseif self.directionHit == 'right' or (self.directionHit == 'none' and self.direction == 'right') then
 			Timer.tween(KNOCKBACK_SPEED, {
-				[self] = {x =  math.max(MAP_RENDER_OFFSET_X + TILE_SIZE - self.height / 2, self.x - (2 * TILE_SIZE))}
+				[self] = {x =  math.max(MAP_LEFT_EDGE - self.height / 2, self.x - (2 * TILE_SIZE))}
 			}):finish(function()
 				if self.health <= 0 then
 					self:death()
@@ -296,7 +294,7 @@ function Entity:attemptLift(dt)
 	self.liftHitbox:move(self.x, self.y)
 
 	for k, object in pairs(self.room.objects) do
-		if self.liftHitbox:collides(object) then
+		if self.liftHitbox:collides(object) and object.liftable then
 			self.item = object
 			table.remove(self.room.objects, k)
 			break

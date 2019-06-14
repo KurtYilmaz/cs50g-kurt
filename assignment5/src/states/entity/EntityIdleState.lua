@@ -48,6 +48,6 @@ function EntityIdleState:render()
 	if self.entity.item ~= nil then
 		self.entity.item.x = self.entity.x
 		self.entity.item.y = self.entity.y - self.entity.item.height/2
-		self.entity.item:render(-0.5, 0.5)
+		self.entity.item:render(0, 0)
 	end
 end

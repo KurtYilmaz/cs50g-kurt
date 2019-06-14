@@ -55,8 +55,8 @@ function Dungeon:beginShifting(shiftX, shiftY)
 	local destinationX, destinationY = self.player.x, self.player.y
 
 	if shiftX > 0 then
-		playerX = VIRTUAL_WIDTH + (MAP_RENDER_OFFSET_X + TILE_SIZE)
-		destinationX = MAP_RENDER_OFFSET_X + TILE_SIZE
+		playerX = VIRTUAL_WIDTH + (MAP_LEFT_EDGE)
+		destinationX = MAP_LEFT_EDGE
 	elseif shiftX < 0 then
 		playerX = -VIRTUAL_WIDTH + (MAP_RENDER_OFFSET_X + (MAP_WIDTH * TILE_SIZE) - TILE_SIZE - self.player.width)
 		destinationX = MAP_RENDER_OFFSET_X + (MAP_WIDTH * TILE_SIZE) - TILE_SIZE - self.player.width - 1

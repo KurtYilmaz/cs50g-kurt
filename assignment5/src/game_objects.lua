@@ -22,10 +22,13 @@ GAME_OBJECT_DEFS = {
 			['pressed'] = {
 				frame = 1
 			}
-		}
+		},
+		-- AS5.2 - tells if object is liftable
+		liftable = false
 	},
 	-- AS5.2 - support for pots
 	-- Main color = 79, 144, 149
+	-- Secondary color = 52, 74, 97
 	['pot'] = {
 		type = 'pot',
 		texture = 'tiles',
@@ -34,6 +37,8 @@ GAME_OBJECT_DEFS = {
 		height = 16,
 		solid = true,
 		defaultState = 'unbroken',
+		color_primary = {79, 144, 149},
+		color_secondary = {52, 74, 97},
 		states = {
 			['unbroken'] = {
 				frame = 14
@@ -43,7 +48,9 @@ GAME_OBJECT_DEFS = {
 			}
 		},
 		onCollide = function(player, object)
-		end
+		end,
+		-- AS5.2 - tells if object is liftable
+		liftable = true
 	},
 	-- AS5.1 - heart can heal the player
 	['heart'] = {
@@ -66,6 +73,8 @@ GAME_OBJECT_DEFS = {
 				player.health = math.min(player.health + 2, PLAYER_MAX_HEALTH)
 				object.consumed = true
 			end
-		end
+		end,
+		-- AS5.2 - tells if object is liftable
+		liftable = false
 	}
 }

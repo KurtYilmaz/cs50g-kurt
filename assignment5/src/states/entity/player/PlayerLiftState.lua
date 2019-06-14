@@ -49,7 +49,7 @@ end
 
 function PlayerLiftState:render()
 	if self.entity.direction == 'up' then
-		self.entity.item:render(-0.5, 0.5)
+		self.entity.item:render(0, 0)
 		local anim = self.entity.currentAnimation
 		love.graphics.draw(gTextures[anim.texture], gFrames[anim.texture][anim:getCurrentFrame()],
 			math.floor(self.entity.x - self.entity.offsetX), math.floor(self.entity.y - self.entity.offsetY))
@@ -57,7 +57,7 @@ function PlayerLiftState:render()
 		local anim = self.entity.currentAnimation
 		love.graphics.draw(gTextures[anim.texture], gFrames[anim.texture][anim:getCurrentFrame()],
 			math.floor(self.entity.x - self.entity.offsetX), math.floor(self.entity.y - self.entity.offsetY) )
-		self.entity.item:render(-0.5, 0.5)
+		self.entity.item:render(0, 0)
 	end
 
 

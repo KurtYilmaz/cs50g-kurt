@@ -87,6 +87,6 @@ gSounds = {
 }
 
 -- AS5.X - debug flag for rendering hitboxes and hurtboxes
-gRenderHitboxes = true
+gRenderHitboxes = false
 gShowGrid = false
 gShowDebug = false
