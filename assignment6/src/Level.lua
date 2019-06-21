@@ -17,6 +17,9 @@ function Level:init()
     -- actual collision callbacks can cause stack overflow and other errors
     self.destroyedBodies = {}
 
+    -- AS6 - Can't split after collision, so keeping track of it
+    self.playerCollided = false
+
     -- define collision callbacks for our world; the World object expects four,
     -- one for different stages of any given collision
     function beginContact(a, b, coll)
@@ -26,7 +29,6 @@ function Level:init()
 
         -- if we collided between both an alien and an obstacle...
         if types['Obstacle'] and types['Player'] then
-
             -- destroy the obstacle if player's combined velocity is high enough
             if a:getUserData() == 'Obstacle' then
                 local velX, velY = b:getBody():getLinearVelocity()
@@ -43,11 +45,12 @@ function Level:init()
                     table.insert(self.destroyedBodies, b:getBody())
                 end
             end
+
+            self.playerCollided = true
         end
 
         -- if we collided between an obstacle and an alien, as by debris falling...
         if types['Obstacle'] and types['Alien'] then
-
             -- destroy the alien if falling debris is falling fast enough
             if a:getUserData() == 'Obstacle' then
                 local velX, velY = a:getBody():getLinearVelocity()
@@ -68,7 +71,6 @@ function Level:init()
 
         -- if we collided between the player and the alien...
         if types['Player'] and types['Alien'] then
-
             -- destroy the alien if player is traveling fast enough
             if a:getUserData() == 'Player' then
                 local velX, velY = a:getBody():getLinearVelocity()
@@ -85,10 +87,14 @@ function Level:init()
                     table.insert(self.destroyedBodies, a:getBody())
                 end
             end
+
+            self.playerCollided = true
         end
 
         -- if we hit the ground, play a bounce sound
+        -- AS6 - checking for collision to disable splitting
         if types['Player'] and types['Ground'] then
+            self.playerCollided = true
             gSounds['bounce']:stop()
             gSounds['bounce']:play()
         end
@@ -117,6 +123,9 @@ function Level:init()
     -- aliens in our scene
     self.aliens = {}
 
+    -- AS6 - table for extra player aliens to search through
+    self.players = {}
+
     -- obstacles guarding aliens that we can destroy
     self.obstacles = {}
 
@@ -142,6 +151,9 @@ function Level:init()
 
     -- background graphics
     self.background = Background()
+
+    -- AS6 - flag for checking if fired and split
+    self.hasSplit = false
 end
 
 function Level:update(dt)
@@ -182,21 +194,71 @@ function Level:update(dt)
         end
     end
 
+    for k, player in pairs(self.players) do
+        local xPos, yPos = player.body:getPosition()
+        local xVel, yVel = player.body:getLinearVelocity()
+        
+        -- if we fired our alien to the left or it's almost done rolling, respawn
+        -- AS6 - also checking for each player to have stopped rolling
+        if xPos < 0 or (math.abs(xVel) + math.abs(yVel) < 5) then
+            player.body:destroy()
+            table.remove(self.players, k)
+        end
+    end
+
     -- replace launch marker if original alien stopped moving
     if self.launchMarker.launched then
         local xPos, yPos = self.launchMarker.alien.body:getPosition()
         local xVel, yVel = self.launchMarker.alien.body:getLinearVelocity()
         
         -- if we fired our alien to the left or it's almost done rolling, respawn
-        if xPos < 0 or (math.abs(xVel) + math.abs(yVel) < 15) then
+        -- AS6 - also checking for each player to have stopped rolling
+        if xPos < 0 or (math.abs(xVel) + math.abs(yVel) < 5) and #self.players == 0 then
             self.launchMarker.alien.body:destroy()
             self.launchMarker = AlienLaunchMarker(self.world)
+
+            -- AS6 - reset ability to split
+            self.hasSplit = false
+            self.playerCollided = false
 
             -- re-initialize level if we have no more aliens
             if #self.aliens == 0 then
                 gStateMachine:change('start')
             end
         end
+    end
+
+    -- AS6 - alien split logic
+    if love.keyboard.isDown(PLAYER_SPLIT) and not self.hasSplit 
+            and self.launchMarker.launched and not self.playerCollided then
+
+        local gravX, gravY = self.world:getGravity()
+        local playerVelocityX, playerVelocityY = self.launchMarker.alien.body:getLinearVelocity()
+        local playerX = self.launchMarker.alien.body:getX()
+        local playerY = self.launchMarker.alien.body:getY()
+        -- spawn new alien in the world, passing in user data of player
+        local topAlien = Alien(self.world, 'round', playerX, playerY - 40, 'Player', 15)
+        local botAlien = Alien(self.world, 'round', playerX, playerY + 40, 'Player', 10)
+
+        -- apply the difference between current X,Y and base X,Y as launch vector impulse
+        topAlien.body:setLinearVelocity(playerVelocityX, playerVelocityY - 20) 
+        botAlien.body:setLinearVelocity(playerVelocityX, playerVelocityY + 30)
+
+        -- make the alien pretty bouncy
+        topAlien.fixture:setRestitution(0.4)
+        botAlien.fixture:setRestitution(0.4)
+        topAlien.body:setAngularDamping(1)
+        botAlien.body:setAngularDamping(1)
+
+        table.insert(self.players, topAlien)
+        table.insert(self.players, botAlien)
+        
+        self.hasSplit = true
+    end
+
+    -- AS6 - allows skipping of victory scene (really only useful is player is still rolling)
+    if #self.aliens == 0 and #love.mouse.keysPressed > 0 then
+        gStateMachine:change('start')
     end
 end
 
@@ -216,6 +278,10 @@ function Level:render()
         obstacle:render()
     end
 
+    for k, player in pairs(self.players) do
+        player:render()
+    end
+
     -- render instruction text if we haven't launched bird
     if not self.launchMarker.launched then
         love.graphics.setFont(gFonts['medium'])
@@ -232,4 +298,8 @@ function Level:render()
         love.graphics.printf('VICTORY', 0, VIRTUAL_HEIGHT / 2 - 32, VIRTUAL_WIDTH, 'center')
         love.graphics.setColor(255, 255, 255, 255)
     end
+
+    -- if self.launchMarker.alien ~= nil then
+    --     love.graphics.printf(tostring(self.hasSplit),0,0,VIRTUAL_WIDTH,'right')
+    -- end
 end

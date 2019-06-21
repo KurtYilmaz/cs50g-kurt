@@ -8,7 +8,7 @@
 
 Alien = Class{}
 
-function Alien:init(world, type, x, y, userData)
+function Alien:init(world, type, x, y, userData, suggestedSprite)
     self.rotation = 0
 
     self.world = world
@@ -24,7 +24,11 @@ function Alien:init(world, type, x, y, userData)
         self.sprite = math.random(5)
     else
         self.shape = love.physics.newCircleShape(17.5)
-        self.sprite = 9
+        if suggestedSprite ~= nil then
+            self.sprite = suggestedSprite
+        else
+            self.sprite = 9
+        end
     end
 
     self.fixture = love.physics.newFixture(self.body, self.shape)
@@ -33,6 +37,10 @@ function Alien:init(world, type, x, y, userData)
 
     -- used to keep track of despawning the Alien and flinging it
     self.launched = false
+
+    -- AS6 - Flag for checking collision to see if player can split
+    -- Will only ever be set for the player alien
+    self.hasCollided = false
 end
 
 function Alien:render()
