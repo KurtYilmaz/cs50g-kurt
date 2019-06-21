@@ -47,16 +47,16 @@ function EntityWalkState:attemptMove()
     Timer.tween(0.5, {
         [self.entity] = {x = (toX - 1) * TILE_SIZE, y = (toY - 1) * TILE_SIZE - self.entity.height / 2}
     }):finish(function()
-        if love.keyboard.isDown('left') then
+        if love.keyboard.isDown(CTRL_LEFT) then
             self.entity.direction = 'left'
             self.entity:changeState('walk')
-        elseif love.keyboard.isDown('right') then
+        elseif love.keyboard.isDown(CTRL_RIGHT) then
             self.entity.direction = 'right'
             self.entity:changeState('walk')
-        elseif love.keyboard.isDown('up') then
+        elseif love.keyboard.isDown(CTRL_UP) then
             self.entity.direction = 'up'
             self.entity:changeState('walk')
-        elseif love.keyboard.isDown('down') then
+        elseif love.keyboard.isDown(CTRL_DOWN) then
             self.entity.direction = 'down'
             self.entity:changeState('walk')
         else

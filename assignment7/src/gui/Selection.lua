@@ -28,7 +28,7 @@ function Selection:init(def)
 end
 
 function Selection:update(dt)
-    if love.keyboard.wasPressed('up') then
+    if love.keyboard.wasPressed(CTRL_UP) then
         if self.currentSelection == 1 then
             self.currentSelection = #self.items
         else
@@ -37,7 +37,7 @@ function Selection:update(dt)
         
         gSounds['blip']:stop()
         gSounds['blip']:play()
-    elseif love.keyboard.wasPressed('down') then
+    elseif love.keyboard.wasPressed(CTRL_DOWN) then
         if self.currentSelection == #self.items then
             self.currentSelection = 1
         else
@@ -46,7 +46,7 @@ function Selection:update(dt)
         
         gSounds['blip']:stop()
         gSounds['blip']:play()
-    elseif love.keyboard.wasPressed('return') or love.keyboard.wasPressed('enter') then
+    elseif love.keyboard.wasPressed(CTRL_OK) then
         self.items[self.currentSelection].onSelect()
         
         gSounds['blip']:stop()

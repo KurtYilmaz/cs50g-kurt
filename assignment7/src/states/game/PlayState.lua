@@ -18,7 +18,7 @@ function PlayState:init()
 end
 
 function PlayState:update(dt)
-    if not self.dialogueOpened and love.keyboard.wasPressed('p') then
+    if not self.dialogueOpened and love.keyboard.wasPressed(CTRL_HEAL) then
         
         -- heal player pokemon
         gSounds['heal']:play()

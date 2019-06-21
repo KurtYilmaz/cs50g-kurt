@@ -32,7 +32,7 @@ function StartState:init()
 end
 
 function StartState:update(dt)
-    if love.keyboard.wasPressed('enter') or love.keyboard.wasPressed('return') then
+    if love.keyboard.wasPressed(CTRL_START) or love.keyboard.wasPressed('return') then
         gStateStack:push(FadeInState({
             r = 255, g = 255, b = 255
         }, 1,
@@ -45,8 +45,8 @@ function StartState:update(dt)
             gStateStack:push(PlayState())
             gStateStack:push(DialogueState("" .. 
                 "Welcome to the world of 50Mon! To start fighting monsters with your own randomly assigned" ..
-                " monster, just walk in the tall grass! If you need to heal, just press 'P' in the field! " ..
-                "Good luck! (Press Enter to dismiss dialogues)"
+                " monster, just walk in the tall grass! If you need to heal, just press [" .. CTRL_HEAL .. "] in the field! " ..
+                "Good luck! (Press [" .. CTRL_OK ..  "] to confirm)"
             ))
             gStateStack:push(FadeOutState({
                 r = 255, g = 255, b = 255
@@ -63,7 +63,7 @@ function StartState:render()
     love.graphics.setFont(gFonts['large'])
     love.graphics.printf('50-Mon!', 0, VIRTUAL_HEIGHT / 2 - 72, VIRTUAL_WIDTH, 'center')
     love.graphics.setFont(gFonts['medium'])
-    love.graphics.printf('Press Enter', 0, VIRTUAL_HEIGHT / 2 + 68, VIRTUAL_WIDTH, 'center')
+    love.graphics.printf('Press ' .. CTRL_START, 0, VIRTUAL_HEIGHT / 2 + 68, VIRTUAL_WIDTH, 'center')
     love.graphics.setFont(gFonts['small'])
 
     love.graphics.setColor(45, 184, 45, 124)
