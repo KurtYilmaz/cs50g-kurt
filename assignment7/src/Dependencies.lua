@@ -46,6 +46,8 @@ require 'src/states/game/FadeOutState'
 require 'src/states/game/PlayState'
 require 'src/states/game/StartState'
 require 'src/states/game/TakeTurnState'
+-- AS7
+require 'src/states/game/LevelUpMenustate'
 
 require 'src/world/Level'
 require 'src/world/tile_ids'

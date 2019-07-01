@@ -24,6 +24,11 @@ function FadeInState:init(color, time, onFadeComplete)
     end)
 end
 
+-- AS7 - needs to be included to prevent crashes 
+function FadeInState:update(dt)
+
+end
+
 function FadeInState:render()
     love.graphics.setColor(self.r, self.g, self.b, self.opacity)
     love.graphics.rectangle('fill', 0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT)

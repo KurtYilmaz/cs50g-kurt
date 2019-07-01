@@ -104,7 +104,7 @@ function TakeTurnState:attack(attacker, defender, attackerSprite, defenderSprite
                 -- shrink the defender's health bar over half a second, doing at least 1 dmg
                 local dmg = math.max(1, attacker.attack - defender.defense)
                 
-                Timer.tween(0.5, {
+                Timer.tween(0.3, {
                     [defenderBar] = {value = defender.currentHP - dmg}
                 })
                 :finish(function()
@@ -174,7 +174,7 @@ function TakeTurnState:victory()
     })
     :finish(function()
         -- play victory music
-        gSounds['battle-music']:stop()
+        gSounds['battle-music']:pause()
 
         gSounds['victory-music']:setLooping(true)
         gSounds['victory-music']:play()
@@ -185,46 +185,72 @@ function TakeTurnState:victory()
         function()
 
             -- sum all IVs and multiply by level to get exp amount
-            local exp = (self.opponentPokemon.HPIV + self.opponentPokemon.attackIV +
+            -- AS7 - Giving extra XP to easier show assignment working
+            local exp = 20 * (self.opponentPokemon.HPIV + self.opponentPokemon.attackIV +
                 self.opponentPokemon.defenseIV + self.opponentPokemon.speedIV) * self.opponentPokemon.level
 
             gStateStack:push(BattleMessageState('You earned ' .. tostring(exp) .. ' experience points!',
                 function() end, false))
 
             Timer.after(1.5, function()
-                gSounds['exp']:play()
-
-                -- animate the exp filling up
-                Timer.tween(0.5, {
-                    [self.battleState.playerExpBar] = {value = math.min(self.playerPokemon.currentExp + exp, self.playerPokemon.expToLevel)}
-                })
-                :finish(function()
-                    
-                    -- pop exp message off
-                    gStateStack:pop()
-
-                    self.playerPokemon.currentExp = self.playerPokemon.currentExp + exp
-
-                    -- level up if we've gone over the needed amount
-                    if self.playerPokemon.currentExp > self.playerPokemon.expToLevel then
-                        
-                        gSounds['levelup']:play()
-
-                        -- set our exp to whatever the overlap is
-                        self.playerPokemon.currentExp = self.playerPokemon.currentExp - self.playerPokemon.expToLevel
-                        self.playerPokemon:levelUp()
-
-                        gStateStack:push(BattleMessageState('Congratulations! Level Up!',
-                        function()
-                            self:fadeOutWhite()
-                        end))
-                    else
-                        self:fadeOutWhite()
-                    end
-                end)
+                self:earnEXP(exp, false)
             end)
         end))
     end)
+end
+
+-- AS7 - separating these functions out for recursion
+
+function TakeTurnState:earnEXP(exp, recursive)
+    gSounds['exp']:play()
+
+    -- animate the exp filling up
+    Timer.tween(0.5, {
+        [self.battleState.playerExpBar] = {value = math.min(self.playerPokemon.currentExp + exp, self.playerPokemon.expToLevel)}
+    })
+    :finish(function()
+        if not recursive then
+            -- pop exp message off
+            gStateStack:pop()
+        end
+
+        self:calculateLevelUp(exp)
+    end)
+end
+
+function TakeTurnState:calculateLevelUp(exp)
+
+    -- AS7 - Allowing for rollover EXP
+    if exp > self.playerPokemon.expToLevel - self.playerPokemon.currentExp then
+        -- Sets exp to rollover amount
+        exp = exp - self.playerPokemon.expToLevel + self.playerPokemon.currentExp
+        self.playerPokemon.currentExp = 0
+
+        gStateStack:push(LevelUpMenuState(self.battleState, self.playerPokemon,
+        function()
+            self.battleState.playerExpBar.max = self.playerPokemon.expToLevel
+            self.battleState.playerExpBar.value = 0
+            -- AS7 - recursively leveling up if overflow exp
+            self:earnEXP(exp, true)
+        end))
+
+    -- Regular level up
+    elseif self.playerPokemon.currentExp + exp >= self.playerPokemon.expToLevel then
+        self.playerPokemon.currentExp = self.playerPokemon.currentExp + exp
+
+        -- set our exp to whatever the overlap is
+        self.playerPokemon.currentExp = self.playerPokemon.currentExp - self.playerPokemon.expToLevel
+        self.playerPokemon:levelUp()
+
+        gStateStack:push(LevelUpMenuState(self.battleState, self.playerPokemon,
+        function()
+            self.fadeOutWhite()
+        end))
+
+    -- Exiting battle because we didn't reach needed amount
+    else
+        self:fadeOutWhite()
+    end
 end
 
 function TakeTurnState:fadeOutWhite()

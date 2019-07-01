@@ -24,33 +24,38 @@ function Selection:init(def)
 
     self.gapHeight = self.height / #self.items
 
+    -- AS7 - allows for disabling cursor. If not specified, will be true
+    self.cursorEnabled = def.cursorEnabled
+    if self.cursorEnabled == nil then self.cursorEnabled = true end
     self.currentSelection = 1
 end
 
 function Selection:update(dt)
-    if love.keyboard.wasPressed(CTRL_UP) then
-        if self.currentSelection == 1 then
-            self.currentSelection = #self.items
-        else
-            self.currentSelection = self.currentSelection - 1
+    if self.cursorEnabled then
+        if love.keyboard.wasPressed(CTRL_UP) then
+            if self.currentSelection == 1 then
+                self.currentSelection = #self.items
+            else
+                self.currentSelection = self.currentSelection - 1
+            end
+            
+            gSounds['blip']:stop()
+            gSounds['blip']:play()
+        elseif love.keyboard.wasPressed(CTRL_DOWN) then
+            if self.currentSelection == #self.items then
+                self.currentSelection = 1
+            else
+                self.currentSelection = self.currentSelection + 1
+            end
+            
+            gSounds['blip']:stop()
+            gSounds['blip']:play()
+        elseif love.keyboard.wasPressed(CTRL_OK) then
+            self.items[self.currentSelection].onSelect()
+            
+            gSounds['blip']:stop()
+            gSounds['blip']:play()
         end
-        
-        gSounds['blip']:stop()
-        gSounds['blip']:play()
-    elseif love.keyboard.wasPressed(CTRL_DOWN) then
-        if self.currentSelection == #self.items then
-            self.currentSelection = 1
-        else
-            self.currentSelection = self.currentSelection + 1
-        end
-        
-        gSounds['blip']:stop()
-        gSounds['blip']:play()
-    elseif love.keyboard.wasPressed(CTRL_OK) then
-        self.items[self.currentSelection].onSelect()
-        
-        gSounds['blip']:stop()
-        gSounds['blip']:play()
     end
 end
 
@@ -61,11 +66,11 @@ function Selection:render()
         local paddedY = currentY + (self.gapHeight / 2) - self.font:getHeight() / 2
 
         -- draw selection marker if we're at the right index
-        if i == self.currentSelection then
+        if i == self.currentSelection and self.cursorEnabled then
             love.graphics.draw(gTextures['cursor'], self.x - 8, paddedY)
         end
 
-        love.graphics.printf(self.items[i].text, self.x, paddedY, self.width, 'center')
+        love.graphics.printf(' ' .. self.items[i].text, self.x, paddedY, self.width, 'left')
 
         currentY = currentY + self.gapHeight
     end

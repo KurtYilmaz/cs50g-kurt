@@ -18,7 +18,7 @@ function BattleState:init(player)
     self.opponent = Opponent {
         party = Party {
             pokemon = {
-                Pokemon(Pokemon.getRandomDef(), math.random(2, 6))
+                Pokemon(Pokemon.getRandomDef(), math.random(1, player.party.pokemon[1].level))
             }
         }
     }
@@ -122,7 +122,7 @@ function BattleState:triggerSlideIn()
     self.battleStarted = true
 
     -- slide the sprites and circles in from the edges, then trigger first dialogue boxes
-    Timer.tween(1, {
+    Timer.tween(0.5, {
         [self.playerSprite] = {x = 32},
         [self.opponentSprite] = {x = VIRTUAL_WIDTH - 96},
         [self] = {playerCircleX = 66, opponentCircleX = VIRTUAL_WIDTH - 70}
