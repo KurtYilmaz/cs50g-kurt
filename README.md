@@ -11,13 +11,13 @@ https://courses.edx.org/courses/course-v1:HarvardX+CS50G+Games/course/
 4. Rename the extension of the zipped folder from ".zip" to ".love".
 5. Open the ".love" file.
 
-## Running Assignments 8-11 (Unity, Windows) (coming soon)
+## Running Assignments 8-11 (Unity, Windows, Mac, Linux) (coming soon)
 
-### Option 1: .exe files
+### Option 1: EXE files (Windows only)
 
 Windows builds will be uploaded on a file sharing site and linked here at a future date.
 
-### Option 2: building with Unity 2018.1.0
+### Option 2: building with Unity 2018.1.0 (Any platform)
 1. [First, download Unity Hub](https://unity3d.com/get-unity/download).
 2. Once installed, the sidebar on the left side should have an entry called "Installs".
 3. Click the "Add" button on the link, direct to the official releases website, and download Unity 2018.1.0f2 for Unity Hub.
