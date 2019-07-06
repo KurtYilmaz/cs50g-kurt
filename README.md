@@ -17,7 +17,7 @@ https://courses.edx.org/courses/course-v1:HarvardX+CS50G+Games/course/
 
 Windows builds will be uploaded on a file sharing site and linked here at a future date.
 
-#### Option 2: building with Unity 2018.1.0
+### Option 2: building with Unity 2018.1.0
 1. [First, download Unity Hub](https://unity3d.com/get-unity/download)
 2. Once installed, the sidebar on the left side should have an entry called "Installs"
 3. Click the "Add" button on the link, direct to the official releases website, and download Unity2018.1.0f2 for Unity Hub
