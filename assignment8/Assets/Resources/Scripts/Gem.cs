@@ -1,7 +1,10 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿// AS8 - Created gem class, pretty much a copy of coin
 
-public class Coin : MonoBehaviour
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Gem : MonoBehaviour
 {
 
     // Use this for initialization
@@ -13,29 +16,23 @@ public class Coin : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
-        // despawn coin if it goes past the left edge of the screen
+        // Despawn if  moving past left edge
         if (transform.position.x < -25)
         {
             Destroy(gameObject);
         }
         else
         {
-
-            // ensure coin moves at the same rate as the skyscrapers do
             transform.Translate(-SkyscraperSpawner.speed * Time.deltaTime,
-                0, 0, Space.World);
+                 0, 0, Space.World);
         }
 
-        // infinitely rotate this coin about the Y axis in world space
         transform.Rotate(0, 5f, 0, Space.World);
     }
 
     void OnTriggerEnter(Collider other)
     {
-
-        // trigger coin pickup function if a helicopter collides with this
-        other.transform.parent.GetComponent<HeliController>().PickupCoin();
+        other.transform.parent.GetComponent<HeliController>().PickupGem();
         Destroy(gameObject);
     }
 }
