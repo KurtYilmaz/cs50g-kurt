@@ -11,7 +11,7 @@ https://courses.edx.org/courses/course-v1:HarvardX+CS50G+Games/course/
 4. Rename the extension of the zipped folder from ".zip" to ".love".
 5. Open the ".love" file.
 
-## Running Assignments 8-11 (Unity, Windows, Mac, Linux) (coming soon)
+## Running Assignments 8-11 (Unity, Windows, Mac, Linux)
 
 ### Option 1: EXE files (Windows only)
 
