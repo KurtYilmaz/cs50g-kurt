@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// AS8.1 - Coordinates class making it easier to place holes
+
 public class Coordinates
 {
 

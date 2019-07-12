@@ -18,6 +18,8 @@ public class GrabPickups : MonoBehaviour
         if (hit.gameObject.tag == "Pickup")
         {
             pickupSoundSource.Play();
+            // AS8.3 - Keeping track of level count
+            PlayerStats.level += 1;
             SceneManager.LoadScene("Play");
         }
     }
