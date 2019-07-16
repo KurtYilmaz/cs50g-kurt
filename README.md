@@ -4,20 +4,18 @@ Repo for CS50G assignments
 ## Course Link
 https://courses.edx.org/courses/course-v1:HarvardX+CS50G+Games/course/
 
-## Running Assignments 1-7 (LÖVE, Windows, Mac, Linux)
+## Running All Assignments (Windows)
+1. Download the .zip for the following repository: https://github.com/KurtYilmaz/cs50g-kurt-builds
+2. Navigate though directories and double click the .exe file of any assignment you want to play.
+
+## Building Assignments 1-7 (LÖVE, Windows, Mac, Linux)
 1. [Download LÖVE, version 10.2 (I know it's outdated, the course uses libraries only compatible with 10.2)](https://bitbucket.org/rude/love/downloads/).
 2. Install LÖVE.
 3. Zip an assignment folder.
 4. Rename the extension of the zipped folder from ".zip" to ".love".
 5. Open the ".love" file.
 
-## Running Assignments 8-11 (Unity, Windows, Mac, Linux)
-
-### Option 1: EXE files (Windows only)
-
-Windows builds will be uploaded on a file sharing site and linked here at a future date.
-
-### Option 2: building with Unity 2018.1.0
+## Building Assignments 8-11 (Unity, Windows, Mac, Linux)
 1. [First, download Unity Hub](https://unity3d.com/get-unity/download).
 2. Once installed, the sidebar on the left side should have an entry called "Installs".
 3. Click the "Add" button on the link, direct to the official releases website, and download Unity 2018.1.0f2 for Unity Hub.
