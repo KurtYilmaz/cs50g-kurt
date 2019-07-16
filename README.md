@@ -54,11 +54,11 @@ Windows builds will be uploaded on a file sharing site and linked here at a futu
  
 ### Assignment 4 - Super Mario Bros.
 
-  > W - Move up
+  > W - move up
 
-  > A - Move left
+  > A - move left
    
-  > S - Move down
+  > S - move down
    
   > D - move right
    
@@ -66,11 +66,11 @@ Windows builds will be uploaded on a file sharing site and linked here at a futu
  
 ### Assignment 5 - Legend of Zelda
 
-   > W - Move up
+   > W - move up
 
-   > A - Move left
+   > A - move left
    
-   > S - Move down
+   > S - move down
    
    > D - move right
    
@@ -84,34 +84,46 @@ Windows builds will be uploaded on a file sharing site and linked here at a futu
 
 ### Assignment 7 - Pokemon
 
-   > W - Move up
+   > W - move up
 
-   > A - Move left
+   > A - move left
    
-   > S - Move down
+   > S - move down
    
    > D - move right
    
-   > J - OK/Confirm
+   > J - OK/confirm
    
-   > K - Back
+   > K - back
    
-   > H - Heal
+   > H - heal
    
-   > Enter - Start
+   > Enter - start
 
 ### Assignment 8 - 3D Helicopter Game
 
-   > W - Move up
+   > W - move up
 
-   > A - Move left
+   > A - move left
    
-   > S - Move down
+   > S - move down
    
    > D - move right
 
-### Assignment 9 - Dreadhalls (coming soon)
+### Assignment 9 - Dreadhalls
+
+   > Move mouse - move camera/change direction
+     
+   > W - move up
+
+   > A - move left
+   
+   > S - move down
+   
+   > D - move right
+   
+   > Space - Jump
 
 ### Assignment 10 - Portal (coming soon)
 
-### Assignment 11 - Portal Problems (coming soon)
+### Final Project (coming soon)
