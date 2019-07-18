@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// AS8.2 - Conditions for a game over are in this script
+// AS9.2 - Conditions for a game over are in this script
 
 public class GameOverConditions : MonoBehaviour
 {

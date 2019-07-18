@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-// AS8.3 - HUD for camera that displays the level count
+// AS9.3 - HUD for camera that displays the level count
 
 public class Hud : MonoBehaviour
 {

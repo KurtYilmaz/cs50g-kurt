@@ -22,7 +22,7 @@ public class LevelGenerator : MonoBehaviour
 
     public int mazeSize;
 
-    // AS8.1 - Variables for holes creation. Count proportional to size
+    // AS9.1 - Variables for holes creation. Count proportional to size
     public int floorHoleCount;
     public int holesCreated;
     public Coordinates[] holeCoordinates;
@@ -46,7 +46,7 @@ public class LevelGenerator : MonoBehaviour
         // initialize map 2D array
         mapData = GenerateMazeData();
 
-        // AS8.1 - initialization of hole variables
+        // AS9.1 - initialization of hole variables
         floorHoleCount = mazeSize / 10;
         holesCreated = 0;
         // generating hole coordinates, not bothering with checking for duplicates
@@ -93,7 +93,7 @@ public class LevelGenerator : MonoBehaviour
                 }
                 else
                 {
-                    // AS8.1 - Checking to see if coordinates match a hole location
+                    // AS9.1 - Checking to see if coordinates match a hole location
                     bool holeFound = false;
                     for (int i = 0; i < floorHoleCount; i++)
                     {

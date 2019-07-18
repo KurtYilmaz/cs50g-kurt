@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// AS8.3 - Initializes level count number at title scene
+// AS9.3 - Initializes level count number at title scene
 
 public class TitleInit : MonoBehaviour
 {

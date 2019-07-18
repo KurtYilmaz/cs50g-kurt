@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 public class LoadSceneOnInput : MonoBehaviour
 {
 
-    // AS8.2 - sceneName to use the same script in different scenes
+    // AS9.2 - sceneName to use the same script in different scenes
     public static string sceneName;
     // Use this for initialization
     void Start()
@@ -17,7 +17,7 @@ public class LoadSceneOnInput : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // AS8.2 - Changes to a different scene depending on the current one
+        // AS9.2 - Changes to a different scene depending on the current one
         // Previous functionality only changed current scene to "Play"
         if (Input.GetAxis("Submit") == 1)
         {

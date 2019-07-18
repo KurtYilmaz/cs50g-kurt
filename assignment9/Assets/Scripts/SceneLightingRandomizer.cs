@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// AS8.X - Random lighting for each scene
+// AS9.X - Random lighting for each scene
 
 public class SceneLightingRandomizer : MonoBehaviour
 {
